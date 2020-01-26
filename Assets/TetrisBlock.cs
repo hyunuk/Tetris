@@ -8,22 +8,45 @@ public class TetrisBlock : MonoBehaviour {
     public Vector3 rotationPoint;
     private float previousTime;
     public float fallTime = 0.8f;
+	public float leftKeyTime = 0;
+	public float rightKeyTime = 0;
+    public bool leftFlag = true;
+    public bool rightFlag = true;
     public static int height = 20;
     public static int width = 10;
+
     private static Transform[,] grid = new Transform[width, height];
 
     void Start() {
         
     }
 
-    // Update is called once per frame
     void Update() {
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            transform.position += new Vector3(-1, 0, 0);
+
+        if (Input.GetKey(KeyCode.LeftArrow)) {
+            leftKeyTime += Time.deltaTime;
+            if (leftFlag) {
+                transform.position += new Vector3(-1, 0, 0);
+                leftFlag = false;
+            }
+            int tempVal = (int)(leftKeyTime * 100) % 8;
+            if (tempVal == 0) {
+                leftFlag = true;
+			}
             if (!ValidMove()) transform.position -= new Vector3(-1, 0, 0);
-		} else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            transform.position += new Vector3(1, 0, 0);
+
+		} else if (Input.GetKey(KeyCode.RightArrow)) {
+            rightKeyTime += Time.deltaTime;
+            if (rightFlag) {
+                transform.position += new Vector3(1, 0, 0);
+                rightFlag = false;
+            }
+            int tempVal = (int)(rightKeyTime * 100) % 8;
+            if (tempVal == 0) {
+                rightFlag = true;
+			}
             if (!ValidMove()) transform.position -= new Vector3(1, 0, 0);
+            
         } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
             transform.RotateAround(transform.TransformPoint(rotationPoint), new Vector3(0, 0, 1), 90);
             if (!ValidMove()) transform.RotateAround(transform.TransformPoint(rotationPoint), new Vector3(0, 0, 1), -90);
@@ -37,6 +60,8 @@ public class TetrisBlock : MonoBehaviour {
             }
 
 		}
+        if (Input.GetKeyUp(KeyCode.LeftArrow)) leftKeyTime = 0;
+        if (Input.GetKeyUp(KeyCode.RightArrow)) rightKeyTime = 0;
 
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
             transform.position += new Vector3(0, -1, 0);
