@@ -7,6 +7,8 @@ using UnityEngine.UI;
 public class TetrisBlock : MonoBehaviour {
     public Vector3 rotationPoint;
     private float previousTime;
+    private float previousToLeft;
+    private float previousToRight;
     public float fallTime = 0.8f;
     public static int height = 20;
     public static int width = 10;
@@ -20,12 +22,21 @@ public class TetrisBlock : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if (Input.GetKeyDown(KeyCode.LeftArrow))
+        if (Input.GetKeyDown(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.LeftArrow)) {
             HorizontalMove(Vector3.left);
-        else if (Input.GetKeyDown(KeyCode.RightArrow))
+        } else if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
+            HorizontalMove(Vector3.left);
+            previousToLeft = Time.time;
+        } else if (Input.GetKeyDown(KeyCode.RightArrow) && !Input.GetKey(KeyCode.RightArrow)) {
             HorizontalMove(Vector3.right);
-        else if (Input.GetKeyDown(KeyCode.UpArrow))
+        } else if (Input.GetKey(KeyCode.RightArrow) && Time.time - previousToRight > 0.08f) {
+            HorizontalMove(Vector3.right);
+            previousToRight = Time.time;
+        } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
             Rotate();
+        } else if (Input.GetKeyDown(KeyCode.Space)) {
+            while (ValidMove()) VerticalMove(Vector3.down);
+		}
 
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
             VerticalMove(Vector3.down);
