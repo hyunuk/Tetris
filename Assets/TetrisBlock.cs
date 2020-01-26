@@ -11,6 +11,8 @@ public class TetrisBlock : MonoBehaviour {
     public static int height = 20;
     public static int width = 10;
     private static Transform[,] grid = new Transform[width, height];
+    private static int score = 0;
+    private static int linesDeleted = 0;
 
     void Start() {
         
@@ -18,28 +20,58 @@ public class TetrisBlock : MonoBehaviour {
 
     // Update is called once per frame
     void Update() {
-        if (Input.GetKeyDown(KeyCode.LeftArrow)) {
-            transform.position += new Vector3(-1, 0, 0);
-            if (!ValidMove()) transform.position -= new Vector3(-1, 0, 0);
-		} else if (Input.GetKeyDown(KeyCode.RightArrow)) {
-            transform.position += new Vector3(1, 0, 0);
-            if (!ValidMove()) transform.position -= new Vector3(1, 0, 0);
-        } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            transform.RotateAround(transform.TransformPoint(rotationPoint), new Vector3(0, 0, 1), 90);
-            if (!ValidMove()) transform.RotateAround(transform.TransformPoint(rotationPoint), new Vector3(0, 0, 1), -90);
-        }
+        if (Input.GetKeyDown(KeyCode.LeftArrow))
+            HorizontalMove(Vector3.left);
+        else if (Input.GetKeyDown(KeyCode.RightArrow))
+            HorizontalMove(Vector3.right);
+        else if (Input.GetKeyDown(KeyCode.UpArrow))
+            Rotate();
 
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
-            transform.position += new Vector3(0, -1, 0);
-            if (!ValidMove()) {
-                transform.position -= new Vector3(0, -1, 0);
-                AddToGrid();
-                CheckForLines();
-                this.enabled = false;
-                FindObjectOfType<SpawnTetromino>().NewTetromino();
-            }
+            VerticalMove(Vector3.down);
             previousTime = Time.time;
-		} 
+        }
+    }
+
+    void HorizontalMove(Vector3 nextMove) {
+        transform.position += nextMove;
+        SpawnBlock.ghostBlock.transform.position += nextMove;
+        if (!ValidMove()) {
+            transform.position -= nextMove;
+            SpawnBlock.ghostBlock.transform.position -= nextMove;
+        }
+    }
+
+    void VerticalMove(Vector3 nextMove) {
+        transform.position += nextMove;
+        if (!ValidMove()) {
+            transform.position -= nextMove;
+            AddToGrid();
+            CheckForLines();
+            this.enabled = false;
+            FindObjectOfType<SpawnBlock>().NewBlock();
+        }
+    }
+
+    // void Move(Vector3 nextMove) {
+    //     transform.position += nextMove;
+    //     // if (!nextMove.Equals(Vector3.down)) SpawnBlock.ghostBlock.transform.position += nextMove;
+    //     if (!ValidMove()) {
+    //         transform.position -= nextMove;
+    //         // if (!nextMove.Equals(Vector3.down)) SpawnBlock.ghostBlock.transform.position -= nextMove;
+    //         if (nextMove.Equals(Vector3.down)) {
+    //             AddToGrid();
+    //             CheckForLines();
+    //             this.enabled = false;
+    //             FindObjectOfType<SpawnBlock>().NewBlock();
+    //         }
+    //     }
+    //     // SpawnBlock.ghostBlock.transform.position = GhostPosition(SpawnBlock.ghostBlock.transform.position);
+    // }
+
+    void Rotate() {
+        transform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, 90);
+        if (!ValidMove()) transform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, -90);
     }
 
     void CheckForLines() {
@@ -62,7 +94,11 @@ public class TetrisBlock : MonoBehaviour {
         for (int j = 0; j < width; j++) {
             Destroy(grid[j, i].gameObject);
             grid[j, i] = null;
+            score++;
 		}
+        linesDeleted++;
+        print(String.Format("Score: {0}", score));
+        print(String.Format("Line(s) deleted: {0}", linesDeleted));
 	}
 
     void RowDown(int i) {
@@ -79,6 +115,7 @@ public class TetrisBlock : MonoBehaviour {
 
     void AddToGrid() {
         foreach (Transform children in transform) {
+            // print(children.name);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
 
@@ -101,4 +138,14 @@ public class TetrisBlock : MonoBehaviour {
 		}
         return true;
 	}
+
+    public static Vector3 GhostPosition(Vector3 vec) {
+        int x = Mathf.RoundToInt(vec.x), y = Mathf.RoundToInt(vec.y), z = Mathf.RoundToInt(vec.z);
+
+        for (; y > 0; y--) {
+            if (grid[x, y - 1] != null) break;
+        }
+
+        return new Vector3(x, y, z);
+    }
 }
