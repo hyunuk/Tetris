@@ -12,24 +12,19 @@ public class SpawnBlock : MonoBehaviour {
 
     void Start() {
         nextBlock = Random.Range(0, Blocks.Length);
-        // ghostBlock = nextBlock;
-        InitGhost();
         NewBlock();
-    }
-
-    void InitGhost() {
-        ghostBlock = Instantiate(Ghosts[nextBlock], TetrisBlock.GhostPosition(transform.position), Quaternion.identity);
     }
 
     // Update is called once per frame
     public void NewBlock() {
-        // GameObject currBlock = Blocks[nextBlock], ghostBlock = Blocks[nextBlock];
-
-        // TetrisBlock.SetGhostBlock(ghostBlock);
-
         Instantiate(Blocks[nextBlock], transform.position, Quaternion.identity);
-
+        NewGhost();
         nextBlock = Random.Range(0, Blocks.Length);
         print(String.Format("Next Block: {0}", nextBlock));
+    }
+
+    void NewGhost() {
+        Destroy(ghostBlock);
+        ghostBlock = Instantiate(Ghosts[nextBlock], TetrisBlock.GhostPosition(transform.position), Quaternion.identity);
     }
 }

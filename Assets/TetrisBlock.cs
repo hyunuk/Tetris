@@ -31,14 +31,13 @@ public class TetrisBlock : MonoBehaviour {
             VerticalMove(Vector3.down);
             previousTime = Time.time;
         }
+        SpawnBlock.ghostBlock.transform.position = GhostPosition(transform.position);
     }
 
     void HorizontalMove(Vector3 nextMove) {
         transform.position += nextMove;
-        SpawnBlock.ghostBlock.transform.position += nextMove;
         if (!ValidMove()) {
             transform.position -= nextMove;
-            SpawnBlock.ghostBlock.transform.position -= nextMove;
         }
     }
 
@@ -53,25 +52,13 @@ public class TetrisBlock : MonoBehaviour {
         }
     }
 
-    // void Move(Vector3 nextMove) {
-    //     transform.position += nextMove;
-    //     // if (!nextMove.Equals(Vector3.down)) SpawnBlock.ghostBlock.transform.position += nextMove;
-    //     if (!ValidMove()) {
-    //         transform.position -= nextMove;
-    //         // if (!nextMove.Equals(Vector3.down)) SpawnBlock.ghostBlock.transform.position -= nextMove;
-    //         if (nextMove.Equals(Vector3.down)) {
-    //             AddToGrid();
-    //             CheckForLines();
-    //             this.enabled = false;
-    //             FindObjectOfType<SpawnBlock>().NewBlock();
-    //         }
-    //     }
-    //     // SpawnBlock.ghostBlock.transform.position = GhostPosition(SpawnBlock.ghostBlock.transform.position);
-    // }
-
     void Rotate() {
         transform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, 90);
-        if (!ValidMove()) transform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, -90);
+        SpawnBlock.ghostBlock.transform.RotateAround(SpawnBlock.ghostBlock.transform.TransformPoint(rotationPoint), Vector3.forward, 90);
+        if (!ValidMove()) {
+            transform.RotateAround(transform.TransformPoint(rotationPoint), Vector3.forward, -90);
+            SpawnBlock.ghostBlock.transform.RotateAround(SpawnBlock.ghostBlock.transform.TransformPoint(rotationPoint), Vector3.forward, -90);
+        }
     }
 
     void CheckForLines() {
@@ -107,7 +94,7 @@ public class TetrisBlock : MonoBehaviour {
                 if (grid[j, y] != null) {
                     grid[j, y - 1] = grid[j, y];
                     grid[j, y] = null;
-                    grid[j, y - 1].transform.position -= new Vector3(0, 1, 0);
+                    grid[j, y - 1].transform.position -= Vector3.up;
 				}
 			}
 		}
@@ -115,9 +102,9 @@ public class TetrisBlock : MonoBehaviour {
 
     void AddToGrid() {
         foreach (Transform children in transform) {
-            // print(children.name);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
+            print(String.Format("({0}, {1})", roundedX, roundedY));
 
             grid[roundedX, roundedY] = children;
         }
@@ -141,6 +128,7 @@ public class TetrisBlock : MonoBehaviour {
 
     public static Vector3 GhostPosition(Vector3 vec) {
         int x = Mathf.RoundToInt(vec.x), y = Mathf.RoundToInt(vec.y), z = Mathf.RoundToInt(vec.z);
+        print(String.Format("Ghost pos candidate: ({0}, {1})", vec.x, vec.y));
 
         for (; y > 0; y--) {
             if (grid[x, y - 1] != null) break;

@@ -251,7 +251,7 @@ GameObject:
   - component: {fileID: 2280637031128462771}
   - component: {fileID: 2280637031128462780}
   m_Layer: 0
-  m_Name: Z Tetromino
+  m_Name: Z Block
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -287,7 +287,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7b3d06810da0048cf921c1bdfd46bad6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  rotationPoint: {x: 1, y: 0, z: 0}
+  rotationPoint: {x: 1, y: -1, z: 0}
   fallTime: 0.8
 --- !u!1 &2280637031473686638
 GameObject:
