@@ -283,85 +283,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1001 &2004123098
-PrefabInstance:
-  m_ObjectHideFlags: 0
-  serializedVersion: 2
-  m_Modification:
-    m_TransformParent: {fileID: 0}
-    m_Modifications:
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalPosition.x
-      value: 5.3
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalPosition.y
-      value: 15.69
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalPosition.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalRotation.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalRotation.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalRotation.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalRotation.w
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_RootOrder
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.x
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720132, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_LocalEulerAnglesHint.z
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720138, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: m_Name
-      value: I Tetromino
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720139, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: rotationPoint.y
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5147941206009720139, guid: 03b365a52f9e14a77a232947399fdd00,
-        type: 3}
-      propertyPath: rotationPoint.x
-      value: 1
-      objectReference: {fileID: 0}
-    m_RemovedComponents: []
-  m_SourcePrefab: {fileID: 100100000, guid: 03b365a52f9e14a77a232947399fdd00, type: 3}
 --- !u!1 &2126270416
 GameObject:
   m_ObjectHideFlags: 0
@@ -405,7 +326,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e9e6fe95312e343eb95e040b39003197, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  Tetrominoes:
+  Blocks:
   - {fileID: 5147941206009720138, guid: 03b365a52f9e14a77a232947399fdd00, type: 3}
   - {fileID: 1180035624987581168, guid: 138ac93311a8c43a2a048cd4ac21da53, type: 3}
   - {fileID: 8839696278141935906, guid: 43bc9b2c242f641cfb0bbb38171da0ba, type: 3}
@@ -413,3 +334,11 @@ MonoBehaviour:
   - {fileID: 2701792024482297076, guid: 13ea03b590424425e8b0b282502c46ac, type: 3}
   - {fileID: 2306410659138016272, guid: 02051b06e5e034d85b3bf137c33db866, type: 3}
   - {fileID: 2280637031128462781, guid: 594af59ad942e44f99335009bd700e96, type: 3}
+  Ghosts:
+  - {fileID: 2406787693513150963, guid: d37ba47a089c24f6d9f6c8cbfb3791c9, type: 3}
+  - {fileID: 7855372162643257130, guid: ea8d09d6ecebd48ed864fa24ef706b9a, type: 3}
+  - {fileID: 2791111624752308145, guid: ca436776aeea64fb7a0f584c56a26f0d, type: 3}
+  - {fileID: 1939362863410577560, guid: d530f1d3fcc9a4e048852abe0f8188d4, type: 3}
+  - {fileID: 2423289372058844894, guid: 5a0efc2fe989649fbbbb339abb77ace1, type: 3}
+  - {fileID: 2861131574491730413, guid: 80ec99ae2f35f4e428cd3c5ae410f5a5, type: 3}
+  - {fileID: 7826645784206338080, guid: 9117bceb169964bcf9bba75fb0155b2b, type: 3}
