@@ -15,8 +15,8 @@ public class GameController : MonoBehaviour {
     private static int score = 0;
     private static int linesDeleted = 0;
 
-    private static Transform[,] grid = new Transform[height, width];
-    public enum State { empty, block, dead };
+    private static TetrisBlock[,] grid = new TetrisBlock[height, width];
+    public enum State { empty, dead };
     public State[,] board = new State[height, width];
     
     public TetrisBlock[] Blocks;
@@ -24,7 +24,7 @@ public class GameController : MonoBehaviour {
     private int nextBlock;
     public TetrisBlock currBlock;
     private GhostBlock ghostBlock;
-    public GameObject deadBlock;
+    public TetrisBlock deadBlock;
 
     void Start() {
         board.Initialize(); // filled with empty
@@ -59,9 +59,10 @@ public class GameController : MonoBehaviour {
     }
 
     void Rotate() {
-        currBlock.transform.RotateAround(currBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
+        Transform currTransform = currBlock.transform;
+        currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
         if (!ValidMove()) {
-            currBlock.transform.RotateAround(currBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, -90);
+            currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, -90);
         }
     }
 
@@ -82,8 +83,9 @@ public class GameController : MonoBehaviour {
 
     private void EndTurn() {
         AddToGrid();
-        CheckForLines();
         NewBlock();
+        CheckForLines();
+        DrawBoard();
     }
 
     void AddToGrid() {
@@ -91,11 +93,10 @@ public class GameController : MonoBehaviour {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
             board[roundedY, roundedX] = State.dead;
-            grid[roundedY, roundedX] = children;
+            //grid[roundedY, roundedX] = 
         }
-        DrawBoard();
     }
-
+    
     void CheckForLines() {
         for (int y = height - 1; y >= 0; y--) {
             if (HasLine(y)) {
@@ -114,27 +115,29 @@ public class GameController : MonoBehaviour {
 
     void DeleteLine(int y) {
         for (int x = 0; x < width; x++) {
-            board[y, x] = State.empty;
+            if (grid[y, x] != null) {
+                grid[y, x].Destroy();
+                grid[y, x] = null;
+                board[y, x] = State.empty;
+            }
             score++;
         }
         linesDeleted++;
-        DrawBoard();
         print(String.Format("Score: {0}", score));
         print(String.Format("Line(s) deleted: {0}", linesDeleted));
     }
 
-    void RowDown(int i) {
-        for (int y = i; y < height; y++) {
-            for (int j = 0; j < width; j++) {
-                if (grid[j, y] != null) {
-                    grid[j, y - 1] = grid[j, y];
-                    grid[j, y] = null;
-                    grid[j, y - 1].transform.position -= Vector3.up;
+    void RowDown(int deletedLine) {
+        for (int y = deletedLine; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (grid[y, x] != null) {
+                    grid[y - 1, x] = grid[y, x];
+                    grid[y, x] = null;
+                    grid[y - 1, x].transform.position -= Vector3.up;
 				}
-                if (board[j, y] == State.dead) {
-                    board[j, y - 1] = board[j, y];
-                    board[j, y] = State.empty;
-                    DrawBoard();
+                if (board[y, x] == State.dead) {
+                    board[y - 1, x] = board[y, x];
+                    board[y, x] = State.empty;
                 }
             }
         }
@@ -143,14 +146,18 @@ public class GameController : MonoBehaviour {
     void DrawBoard() {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                if (board[y, x] == State.empty) Destroy(grid[y, x].gameObject);
-                else if (board[y, x] == State.dead) Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                if (board[y, x] == State.dead) {
+                    TetrisBlock curr = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                    grid[y, x] = curr;
+                } else if (board[y, x] == State.empty) {
+                    if (grid[y, x] != null) {
+                        grid[y, x].Destroy();
+                        grid[y, x] = null;
+                    }
+                }
             }
         }
-
     }
-
-
 
     bool ValidMove() {
         foreach (Transform children in currBlock.transform) {
@@ -172,7 +179,6 @@ public class GameController : MonoBehaviour {
 
     public Vector3 GhostPosition(Vector3 vec) {
         int x = Mathf.RoundToInt(vec.x), y = Mathf.RoundToInt(vec.y), z = Mathf.RoundToInt(vec.z);
-
         for (; y > 0; y--) {
             if (grid[y - 1, x] != null) break;
         }
@@ -181,8 +187,13 @@ public class GameController : MonoBehaviour {
     }
 
     private void NewBlock() {
-        Destroy(currBlock);
-        currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
+        if (currBlock != null) {
+            TetrisBlock t = currBlock;
+            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
+            t.Destroy();
+        } else {
+            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
+        }
         //NewGhost();
         nextBlock = Random.Range(0, Blocks.Length);
     }

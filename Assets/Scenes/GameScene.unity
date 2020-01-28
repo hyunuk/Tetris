@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 458819150}
   - component: {fileID: 458819149}
   m_Layer: 0
-  m_Name: Square
+  m_Name: Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -313,7 +313,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fallTime: 0.8
-  startPos: {x: 5, y: 19, z: 0}
+  startPos: {x: 4, y: 18, z: 0}
   Blocks:
   - {fileID: 5147941206009720139, guid: 03b365a52f9e14a77a232947399fdd00, type: 3}
   - {fileID: 1180035624987581183, guid: 138ac93311a8c43a2a048cd4ac21da53, type: 3}
@@ -331,7 +331,7 @@ MonoBehaviour:
   - {fileID: 2727857867010006268, guid: 80ec99ae2f35f4e428cd3c5ae410f5a5, type: 3}
   - {fileID: -8131126896562175201, guid: 9117bceb169964bcf9bba75fb0155b2b, type: 3}
   currBlock: {fileID: 0}
-  deadBlock: {fileID: 2306410659138016272, guid: 5eabe4cd87357d34a8af303ed21693e5,
+  deadBlock: {fileID: 2306410659138016273, guid: 5eabe4cd87357d34a8af303ed21693e5,
     type: 3}
 --- !u!4 &1693517412
 Transform:

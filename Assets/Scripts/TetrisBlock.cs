@@ -15,4 +15,10 @@ public class TetrisBlock : MonoBehaviour {
     void Update() {
         
     }
+
+    public void Destroy() {
+        foreach (Transform children in this.transform) {
+            Destroy(children);
+        }
+    }
 }
