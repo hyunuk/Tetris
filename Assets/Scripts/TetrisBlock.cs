@@ -18,7 +18,7 @@ public class TetrisBlock : MonoBehaviour {
 
     public void Destroy() {
         foreach (Transform children in this.transform) {
-            Destroy(children);
+            Destroy(children.gameObject);
         }
     }
 }

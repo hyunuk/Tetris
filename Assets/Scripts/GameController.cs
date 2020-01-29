@@ -15,10 +15,7 @@ public class GameController : MonoBehaviour {
     private static int score = 0;
     private static int linesDeleted = 0;
 
-    private static TetrisBlock[,] grid = new TetrisBlock[height, width];
-    public enum State { empty, dead };
-    public State[,] board = new State[height, width];
-    
+    private static TetrisBlock[,] grid = new TetrisBlock[height, width];    
     public TetrisBlock[] Blocks;
     public GhostBlock[] Ghosts;
     private int nextBlock;
@@ -27,7 +24,6 @@ public class GameController : MonoBehaviour {
     public TetrisBlock deadBlock;
 
     void Start() {
-        board.Initialize(); // filled with empty
         nextBlock = Random.Range(0, Blocks.Length);
         NewBlock();
     }
@@ -85,18 +81,29 @@ public class GameController : MonoBehaviour {
         AddToGrid();
         NewBlock();
         CheckForLines();
-        DrawBoard();
     }
 
     void AddToGrid() {
         foreach (Transform children in currBlock.transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
-            board[roundedY, roundedX] = State.dead;
-            //grid[roundedY, roundedX] = 
+            TetrisBlock curr = Instantiate(deadBlock, new Vector3(roundedX, roundedY, 0), Quaternion.identity);
+            grid[roundedY, roundedX] = curr;
         }
     }
-    
+
+    private void NewBlock() {
+        if (currBlock != null) {
+            TetrisBlock t = currBlock;
+            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
+            t.Destroy();
+        } else {
+            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
+        }
+        //NewGhost();
+        nextBlock = Random.Range(0, Blocks.Length);
+    }
+
     void CheckForLines() {
         for (int y = height - 1; y >= 0; y--) {
             if (HasLine(y)) {
@@ -108,7 +115,7 @@ public class GameController : MonoBehaviour {
 
     bool HasLine(int y) {
         for (int x = 0; x < width; x++) {
-            if (board[y, x] == State.empty) return false;
+            if (grid[y, x] == null) return false;
         }
         return true;
     }
@@ -118,7 +125,6 @@ public class GameController : MonoBehaviour {
             if (grid[y, x] != null) {
                 grid[y, x].Destroy();
                 grid[y, x] = null;
-                board[y, x] = State.empty;
             }
             score++;
         }
@@ -135,26 +141,6 @@ public class GameController : MonoBehaviour {
                     grid[y, x] = null;
                     grid[y - 1, x].transform.position -= Vector3.up;
 				}
-                if (board[y, x] == State.dead) {
-                    board[y - 1, x] = board[y, x];
-                    board[y, x] = State.empty;
-                }
-            }
-        }
-    }
-
-    void DrawBoard() {
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (board[y, x] == State.dead) {
-                    TetrisBlock curr = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
-                    grid[y, x] = curr;
-                } else if (board[y, x] == State.empty) {
-                    if (grid[y, x] != null) {
-                        grid[y, x].Destroy();
-                        grid[y, x] = null;
-                    }
-                }
             }
         }
     }
@@ -170,9 +156,6 @@ public class GameController : MonoBehaviour {
             if (grid[roundedY, roundedX] != null) {
                 return false;
             }
-            if (board[roundedY, roundedX] != State.empty) {
-                return false;
-            }
         }
         return true;
     }
@@ -184,18 +167,6 @@ public class GameController : MonoBehaviour {
         }
 
         return new Vector3(x, y, z);
-    }
-
-    private void NewBlock() {
-        if (currBlock != null) {
-            TetrisBlock t = currBlock;
-            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
-            t.Destroy();
-        } else {
-            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
-        }
-        //NewGhost();
-        nextBlock = Random.Range(0, Blocks.Length);
     }
 
     private void NewGhost() {
