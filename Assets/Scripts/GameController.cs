@@ -39,7 +39,7 @@ public class GameController : MonoBehaviour {
         } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
             Rotate();
         } else if (Input.GetKeyDown(KeyCode.Space)) {
-            while (ValidMove(currBlock.transform)) VerticalMove(Vector3.down);
+            while (ValidMove(currBlock.transform) && !hardDropped) VerticalMove(Vector3.down);
         } else if (Input.GetKeyUp(KeyCode.Space)) {
             hardDropped = false;
         }
@@ -153,10 +153,10 @@ public class GameController : MonoBehaviour {
 
     public Vector3 GhostPosition(Vector3 vec) {
         int x = Mathf.RoundToInt(vec.x), y = Mathf.RoundToInt(vec.y), z = Mathf.RoundToInt(vec.z);
-        ghostBlock.transform.position = new Vector3(x, -1, z);
-        while (!ValidMove(ghostBlock.transform)) ghostBlock.transform.position += Vector3.up;
+        ghostBlock.transform.position = new Vector3(x, y, z);
+        while (ValidMove(ghostBlock.transform)) ghostBlock.transform.position += Vector3.down;
 
-        return ghostBlock.transform.position;
+        return ghostBlock.transform.position + Vector3.up;
     }
 
     private void NewBlock() {
