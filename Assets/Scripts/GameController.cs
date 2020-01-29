@@ -30,33 +30,25 @@ public class GameController : MonoBehaviour {
     }
 
     void Update() {
-        if (Input.GetKeyDown(KeyCode.LeftArrow) && !Input.GetKey(KeyCode.LeftArrow)) {
-            HorizontalMove(Vector3.left);
-        } else if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
+        if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
             HorizontalMove(Vector3.left);
             previousToLeft = Time.time;
-
-        } else if (Input.GetKeyDown(KeyCode.RightArrow) && !Input.GetKey(KeyCode.RightArrow)) {
-            HorizontalMove(Vector3.right);
         } else if (Input.GetKey(KeyCode.RightArrow) && Time.time - previousToRight > 0.08f) {
             HorizontalMove(Vector3.right);
             previousToRight = Time.time;
-
         } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
             Rotate();
         } else if (Input.GetKeyDown(KeyCode.Space)) {
-            while (ValidMove(currBlock) && !hardDropped) {
-                VerticalMove(Vector3.down);
-                
-            }
+            while (ValidMove(currBlock.transform)) VerticalMove(Vector3.down);
         } else if (Input.GetKeyUp(KeyCode.Space)) {
-            hardDropped = false; 
+            hardDropped = false;
         }
 
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
             VerticalMove(Vector3.down);
             previousTime = Time.time;
         }
+
         ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
     }
 
@@ -65,7 +57,7 @@ public class GameController : MonoBehaviour {
         currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
         ghostBlock.transform.RotateAround(ghostBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
 
-        if (!ValidMove(currBlock)) {
+        if (!ValidMove(currBlock.transform)) {
             currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, -90);
             ghostBlock.transform.RotateAround(ghostBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, -90);
 
@@ -74,14 +66,14 @@ public class GameController : MonoBehaviour {
 
     void HorizontalMove(Vector3 nextMove) {
         currBlock.transform.position += nextMove;
-        if (!ValidMove(currBlock)) {
+        if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
         }
     }
 
     void VerticalMove(Vector3 nextMove) {
         currBlock.transform.position += nextMove;
-        if (!ValidMove(currBlock)) {
+        if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
             EndTurn();
         }
@@ -144,23 +136,8 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    bool ValidMove(TetrisBlock block) {
-        foreach (Transform children in block.transform) {
-            int roundedY = Mathf.RoundToInt(children.transform.position.y);
-            int roundedX = Mathf.RoundToInt(children.transform.position.x);
-
-            if (roundedX < 0 || roundedX >= width || roundedY < 0 || roundedY >= height) {
-                return false;
-            }
-            if (grid[roundedY, roundedX] != null) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    bool ValidMove(GhostBlock block) {
-        foreach (Transform children in block.transform) {
+    bool ValidMove(Transform transform) {
+        foreach (Transform children in transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
 
@@ -177,10 +154,7 @@ public class GameController : MonoBehaviour {
     public Vector3 GhostPosition(Vector3 vec) {
         int x = Mathf.RoundToInt(vec.x), y = Mathf.RoundToInt(vec.y), z = Mathf.RoundToInt(vec.z);
         ghostBlock.transform.position = new Vector3(x, -1, z);
-        while (!ValidMove(ghostBlock)) {
-            ghostBlock.transform.position = Vector3.up;
-            break;
-        }
+        while (!ValidMove(ghostBlock.transform)) ghostBlock.transform.position += Vector3.up;
 
         return ghostBlock.transform.position;
     }
