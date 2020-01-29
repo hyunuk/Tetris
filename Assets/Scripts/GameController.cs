@@ -44,34 +44,41 @@ public class GameController : MonoBehaviour {
         } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
             Rotate();
         } else if (Input.GetKeyDown(KeyCode.Space)) {
-            while (ValidMove()) VerticalMove(Vector3.down);
+            while (ValidMove(currBlock)) {
+                VerticalMove(Vector3.down);
+            }
+                
         }
 
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
             VerticalMove(Vector3.down);
             previousTime = Time.time;
         }
-        //ghostBlock.transform.position = GhostPosition(transform.position);
+        ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
     }
 
     void Rotate() {
         Transform currTransform = currBlock.transform;
         currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
-        if (!ValidMove()) {
+        ghostBlock.transform.RotateAround(ghostBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
+
+        if (!ValidMove(currBlock)) {
             currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, -90);
+            ghostBlock.transform.RotateAround(ghostBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, -90);
+
         }
     }
 
     void HorizontalMove(Vector3 nextMove) {
         currBlock.transform.position += nextMove;
-        if (!ValidMove()) {
+        if (!ValidMove(currBlock)) {
             currBlock.transform.position -= nextMove;
         }
     }
 
     void VerticalMove(Vector3 nextMove) {
         currBlock.transform.position += nextMove;
-        if (!ValidMove()) {
+        if (!ValidMove(currBlock)) {
             currBlock.transform.position -= nextMove;
             EndTurn();
         }
@@ -90,18 +97,6 @@ public class GameController : MonoBehaviour {
             TetrisBlock curr = Instantiate(deadBlock, new Vector3(roundedX, roundedY, 0), Quaternion.identity);
             grid[roundedY, roundedX] = curr;
         }
-    }
-
-    private void NewBlock() {
-        if (currBlock != null) {
-            TetrisBlock t = currBlock;
-            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
-            t.Destroy();
-        } else {
-            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
-        }
-        //NewGhost();
-        nextBlock = Random.Range(0, Blocks.Length);
     }
 
     void CheckForLines() {
@@ -145,8 +140,23 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    bool ValidMove() {
-        foreach (Transform children in currBlock.transform) {
+    bool ValidMove(TetrisBlock block) {
+        foreach (Transform children in block.transform) {
+            int roundedY = Mathf.RoundToInt(children.transform.position.y);
+            int roundedX = Mathf.RoundToInt(children.transform.position.x);
+
+            if (roundedX < 0 || roundedX >= width || roundedY < 0 || roundedY >= height) {
+                return false;
+            }
+            if (grid[roundedY, roundedX] != null) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    bool ValidMove(GhostBlock block) {
+        foreach (Transform children in block.transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
 
@@ -162,16 +172,33 @@ public class GameController : MonoBehaviour {
 
     public Vector3 GhostPosition(Vector3 vec) {
         int x = Mathf.RoundToInt(vec.x), y = Mathf.RoundToInt(vec.y), z = Mathf.RoundToInt(vec.z);
-        for (; y > 0; y--) {
-            if (grid[y - 1, x] != null) break;
+        ghostBlock.transform.position = new Vector3(x, -1, z);
+        while (!ValidMove(ghostBlock)) {
+            ghostBlock.transform.position = Vector3.up;
+            break;
         }
 
-        return new Vector3(x, y, z);
+        return ghostBlock.transform.position;
+    }
+
+    private void NewBlock() {
+        if (currBlock != null) {
+            TetrisBlock t = currBlock;
+            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
+            t.Destroy();
+        } else {
+            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
+        }
+        NewGhost();
+        nextBlock = Random.Range(0, Blocks.Length);
     }
 
     private void NewGhost() {
-        Destroy(ghostBlock);
-        ghostBlock = Instantiate(Ghosts[nextBlock], GhostPosition(transform.position), Quaternion.identity);
+        if (ghostBlock != null) {
+            ghostBlock.Destroy();
+            ghostBlock = Instantiate(Ghosts[nextBlock], currBlock.transform.position, Quaternion.identity);
+        } else {
+            ghostBlock = Instantiate(Ghosts[nextBlock], currBlock.transform.position, Quaternion.identity);
+        }
     }
-
 }
