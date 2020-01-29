@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour {
     public TetrisBlock currBlock;
     private GhostBlock ghostBlock;
     public TetrisBlock deadBlock;
+    private bool hardDropped = false;
 
     void Start() {
         nextBlock = Random.Range(0, Blocks.Length);
@@ -44,10 +45,12 @@ public class GameController : MonoBehaviour {
         } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
             Rotate();
         } else if (Input.GetKeyDown(KeyCode.Space)) {
-            while (ValidMove(currBlock)) {
+            while (ValidMove(currBlock) && !hardDropped) {
                 VerticalMove(Vector3.down);
-            }
                 
+            }
+        } else if (Input.GetKeyUp(KeyCode.Space)) {
+            hardDropped = false; 
         }
 
         if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
@@ -88,6 +91,7 @@ public class GameController : MonoBehaviour {
         AddToGrid();
         NewBlock();
         CheckForLines();
+        hardDropped = true;
     }
 
     void AddToGrid() {
