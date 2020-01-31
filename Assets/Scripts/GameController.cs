@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 public class GameController : MonoBehaviour {
@@ -23,6 +24,8 @@ public class GameController : MonoBehaviour {
     private GhostBlock ghostBlock;
     public TetrisBlock deadBlock;
     private bool hardDropped = false;
+
+    public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue;
 
     void Start() {
         nextBlock = Random.Range(0, Blocks.Length);
@@ -50,6 +53,12 @@ public class GameController : MonoBehaviour {
         }
 
         ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
+
+        timeValue.text = Time.time.ToString();
+        levelValue.text = Mathf.RoundToInt((linesDeleted / 10) + 1).ToString();
+        linesValue.text = linesDeleted.ToString();
+        highscoreValue.text = score.ToString();
+        scoreValue.text = score.ToString();
     }
 
     void Rotate() {
