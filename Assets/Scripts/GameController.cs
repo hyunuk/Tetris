@@ -2,9 +2,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Numerics;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
+using Vector3 = UnityEngine.Vector3;
+using Quaternion = UnityEngine.Quaternion;
 
 public class GameController : MonoBehaviour {
     private float previousTime;
@@ -27,6 +30,7 @@ public class GameController : MonoBehaviour {
     public TetrisBlock[] Blocks;
     public GhostBlock[] Ghosts;
     private int nextBlock;
+    public TetrisBlock nextBlockObject;
     public TetrisBlock currBlock;
     private GhostBlock ghostBlock;
     public TetrisBlock deadBlock;
@@ -47,6 +51,9 @@ public class GameController : MonoBehaviour {
         do nextBlock = Random.Range(0, Blocks.Length);
         while (deck.Contains(nextBlock));
         deck.Add(nextBlock);
+
+        if (nextBlockObject != null) nextBlockObject.Destroy();
+        nextBlockObject = Instantiate(Blocks[nextBlock], new Vector3(12, 17, 0), Quaternion.identity);
         print(nextBlock);
     }
 
