@@ -238,7 +238,7 @@ public class GameController : MonoBehaviour {
         destroyedBlocks[0] = 0;
     }
 
-    private IEnumerator DeleteLineEffect(TetrisBlock dead, int[] destroyedBlocks) {
+    private IEnumerator DeleteLineEffect(Block dead, int[] destroyedBlocks) {
         Color tmp = dead.sprite.GetComponent<SpriteRenderer>().color;
         float _progress = 1f;
 
