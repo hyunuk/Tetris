@@ -10,6 +10,7 @@ public class GameController : MonoBehaviour {
     private float previousToLeft;
     private float previousToRight;
     public float fallTime = 0.8f;
+    public float N = 1;
     public Vector3 startPos = new Vector3();
     public static int height = 20;
     public static int width = 10;
@@ -54,8 +55,12 @@ public class GameController : MonoBehaviour {
 
         ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
 
+        int nextLevel = Mathf.RoundToInt((linesDeleted / N) + 1);
+
+        if (Int16.Parse(levelValue.text) < nextLevel) fallTime /= 1f + (Mathf.RoundToInt(linesDeleted / N) * 0.1f);
+
         timeValue.text = Time.time.ToString();
-        levelValue.text = Mathf.RoundToInt((linesDeleted / 10) + 1).ToString();
+        levelValue.text = nextLevel.ToString();
         linesValue.text = linesDeleted.ToString();
         highscoreValue.text = score.ToString();
         scoreValue.text = score.ToString();
