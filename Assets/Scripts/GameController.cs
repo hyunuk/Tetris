@@ -14,19 +14,19 @@ public class GameController : MonoBehaviour {
     private float previousToLeft;
     private float previousToRight;
     public float fallTime = 0.8f;
-    public float N = 10;
+    private float N = 20;
     public Vector3 startPos = new Vector3();
-    public static int height = 20;
-    public static int width = 10;
-    private static int score = 0;
-    private static int linesDeleted = 0;
-    private static int numGems = 0;
-    private static int[] scores = {0,40,100,300,1200};
-    private static readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
-    private static HashSet<int> deck = new HashSet<int>();
+    public static readonly int height = 20;
+    public static readonly int width = 10;
+    private int score = 0;
+    private int linesDeleted = 0;
+    private int numGems = 0;
+    private readonly int[] scores = {0,40,100,300,1200};
+    private readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
+    private HashSet<int> deck = new HashSet<int>();
 
-    private static Block[,] grid = new Block[height, width];
-    private static int[,] stage = new int[height, width];
+    private Block[,] grid = new Block[height, width];
+    private int[,] stage = new int[height, width];
 
     public TetrisBlock[] Blocks;
     private Vector3[] Pivots = new[] { new Vector3(-0.33f, 0f, 0f), new Vector3(-0.27f, -0.15f, 0f), new Vector3(-0.27f, 0.1f, 0f), new Vector3(-0.12f, -0.1f, 0f), new Vector3(-0.22f, -0.1f, 0f), new Vector3(-0.02f, -0.1f, 0f), new Vector3(-0.2f, 0.1f, 0f) };
@@ -145,7 +145,6 @@ public class GameController : MonoBehaviour {
     }
 
     void VerticalMove(Vector3 nextMove) {
-        print(currBlock.transform.position);
         currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
