@@ -28,6 +28,8 @@ public class GameController : MonoBehaviour {
     private static int[,] stage = new int[height, width];
 
     public TetrisBlock[] Blocks;
+    private Vector3[] Pivots = new[] { new Vector3(-0.33f, 0f, 0f), new Vector3(-0.27f, -0.15f, 0f), new Vector3(-0.27f, 0.1f, 0f), new Vector3(-0.12f, -0.1f, 0f), new Vector3(-0.22f, -0.1f, 0f), new Vector3(-0.02f, -0.1f, 0f), new Vector3(-0.2f, 0.1f, 0f) };
+
     public GhostBlock[] Ghosts;
     private int nextBlock;
     public TetrisBlock nextBlockObject;
@@ -36,6 +38,7 @@ public class GameController : MonoBehaviour {
     public TetrisBlock deadBlock;
     private bool hardDropped = false;
     private bool gameOver = false;
+    public GameObject nextBlockBackground;
 
     public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue;
     private bool isDestroying = false;
@@ -53,8 +56,10 @@ public class GameController : MonoBehaviour {
         deck.Add(nextBlock);
 
         if (nextBlockObject != null) nextBlockObject.Destroy();
-        nextBlockObject = Instantiate(Blocks[nextBlock], new Vector3(12, 17, 0), Quaternion.identity);
-        print(nextBlock);
+        //nextBlockObject = Instantiate(Blocks[nextBlock], new Vector3(12, 17, 0), Quaternion.identity);
+        nextBlockObject = Instantiate(Blocks[nextBlock]);
+        nextBlockObject.transform.parent = nextBlockBackground.transform;
+        nextBlockObject.transform.localPosition = Pivots[nextBlock];
     }
 
     void SetStage() {
