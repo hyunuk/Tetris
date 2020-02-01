@@ -16,6 +16,7 @@ public class GameController : MonoBehaviour {
     public static int width = 10;
     private static int score = 0;
     private static int linesDeleted = 0;
+    private static int[] scores = { 0, 40, 100, 300, 1200 };
 
     private static TetrisBlock[,] grid = new TetrisBlock[height, width];    
     public TetrisBlock[] Blocks;
@@ -110,12 +111,16 @@ public class GameController : MonoBehaviour {
     }
 
     void CheckForLines() {
+        int numLines = 0;
         for (int y = height - 1; y >= 0; y--) {
             if (HasLine(y)) {
+                numLines++;
                 DeleteLine(y);
                 RowDown(y);
             }
         }
+        score += scores[numLines] * Mathf.RoundToInt((linesDeleted / N) + 1);
+        linesDeleted += numLines;
     }
 
     bool HasLine(int y) {
@@ -131,11 +136,7 @@ public class GameController : MonoBehaviour {
                 grid[y, x].Destroy();
                 grid[y, x] = null;
             }
-            score++;
         }
-        linesDeleted++;
-        print(String.Format("Score: {0}", score));
-        print(String.Format("Line(s) deleted: {0}", linesDeleted));
     }
 
     void RowDown(int deletedLine) {
