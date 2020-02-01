@@ -16,9 +16,33 @@ public class GameController : MonoBehaviour {
     public static int width = 10;
     private static int score = 0;
     private static int linesDeleted = 0;
-    private static int[] scores = { 0, 40, 100, 300, 1200 };
+    private static int[] scores = {0,40,100,300,1200};
 
-    private static TetrisBlock[,] grid = new TetrisBlock[height, width];    
+    private static TetrisBlock[,] grid = new TetrisBlock[height, width];
+    private static int[,] stage = 
+        {
+            {1,1,1,0,0,0,0,1,1,1},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,1,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+            {0,0,0,0,0,0,0,0,0,0},
+        };
+
     public TetrisBlock[] Blocks;
     public GhostBlock[] Ghosts;
     private int nextBlock;
@@ -32,7 +56,16 @@ public class GameController : MonoBehaviour {
 
     void Start() {
         nextBlock = Random.Range(0, Blocks.Length);
+        SetStage();
         NewBlock();
+    }
+
+    void SetStage() {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                if (stage[y, x] == 1) grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+            }
+        }
     }
 
     void Update() {
@@ -104,6 +137,7 @@ public class GameController : MonoBehaviour {
             CheckForLines();
             hardDropped = true;
         } catch (GameOverException e) {
+            Console.WriteLine("Error: {0}", e);
             GameOver();
         }
     }

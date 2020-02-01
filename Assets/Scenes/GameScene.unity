@@ -1177,7 +1177,7 @@ GameObject:
   - component: {fileID: 967146551}
   - component: {fileID: 967146550}
   m_Layer: 0
-  m_Name: Next Block
+  m_Name: Next Block Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1728,7 +1728,7 @@ GameObject:
   - component: {fileID: 1665068602}
   - component: {fileID: 1665068601}
   m_Layer: 0
-  m_Name: Hold Block
+  m_Name: Hold Block Background
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1905,6 +1905,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fallTime: 0.8
+  N: 1
   startPos: {x: 4, y: 18, z: 0}
   Blocks:
   - {fileID: 5147941206009720139, guid: 03b365a52f9e14a77a232947399fdd00, type: 3}
