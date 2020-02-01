@@ -32,12 +32,18 @@ public class GameController : MonoBehaviour {
     public TetrisBlock deadBlock;
     private bool hardDropped = false;
     private bool gameOver = false;
+    private ModeController controller;
 
-    public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue;
+    public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue, gameModeValue;
+
+    void Awake() {
+        controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
+        gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
+    }
 
     void Start() {
         NextBlock();
-        SetStage();
+        if (controller.GetMode() == ModeController.Mode.stage) SetStage();
         NewBlock();
     }
 
