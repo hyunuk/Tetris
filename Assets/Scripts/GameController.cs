@@ -19,6 +19,7 @@ public class GameController : MonoBehaviour {
     private static int linesDeleted = 0;
     private static int[] scores = {0,40,100,300,1200};
     private static readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
+    private static HashSet<int> deck = new HashSet<int>();
 
     private static TetrisBlock[,] grid = new TetrisBlock[height, width];
     private static int[,] stage = new int[height, width];
@@ -36,14 +37,21 @@ public class GameController : MonoBehaviour {
     private bool isDestroying = false;
 
     void Start() {
-        nextBlock = Random.Range(0, Blocks.Length);
+        NextBlock();
         SetStage();
         NewBlock();
     }
 
+    void NextBlock() {
+        if (deck.Count == Blocks.Length) deck.Clear();
+        do nextBlock = Random.Range(0, Blocks.Length);
+        while (deck.Contains(nextBlock));
+        deck.Add(nextBlock);
+        print(nextBlock);
+    }
+
     void SetStage() {
         if (File.Exists(textFile)) {
-            print(String.Format("File {0} exists.", textFile));
             string[] lines = File.ReadAllLines(textFile);
             for (int y = 0; y < height; y++) {
                 string[] pixels  = lines[y].Split(',');
@@ -256,7 +264,7 @@ public class GameController : MonoBehaviour {
     private void NewBlock() {
         currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
         NewGhost();
-        nextBlock = Random.Range(0, Blocks.Length);
+        NextBlock();
     }
 
     private void NewGhost() {
