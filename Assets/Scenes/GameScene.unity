@@ -2008,6 +2008,8 @@ MonoBehaviour:
   currBlock: {fileID: 0}
   deadBlock: {fileID: 2306410659138016273, guid: 5eabe4cd87357d34a8af303ed21693e5,
     type: 3}
+  gemBlock: {fileID: -2319876269257830958, guid: 6ade72a859a7a47f7aa8cee808e3c0f0,
+    type: 3}
   timeValue: {fileID: 1273830351}
   levelValue: {fileID: 93234881}
   linesValue: {fileID: 584801274}

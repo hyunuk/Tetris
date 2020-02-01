@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GhostBlock : MonoBehaviour
+public class GhostBlock : Block
 {
     // Start is called before the first frame update
     void Start()
@@ -17,9 +17,9 @@ public class GhostBlock : MonoBehaviour
         
     }
 
-    internal void Destroy() {
-        foreach (Transform children in this.transform) {
-            Destroy(children.gameObject);
-        }
-    }
+    // internal void Destroy() {
+    //     foreach (Transform children in this.transform) {
+    //         Destroy(children.gameObject);
+    //     }
+    // }
 }
