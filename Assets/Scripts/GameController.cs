@@ -26,6 +26,7 @@ public class GameController : MonoBehaviour {
     private GhostBlock ghostBlock;
     public TetrisBlock deadBlock;
     private bool hardDropped = false;
+    private bool gameOver = false;
 
     public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue;
 
@@ -35,36 +36,38 @@ public class GameController : MonoBehaviour {
     }
 
     void Update() {
-        if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
-            HorizontalMove(Vector3.left);
-            previousToLeft = Time.time;
-        } else if (Input.GetKey(KeyCode.RightArrow) && Time.time - previousToRight > 0.08f) {
-            HorizontalMove(Vector3.right);
-            previousToRight = Time.time;
-        } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
-            Rotate();
-        } else if (Input.GetKeyDown(KeyCode.Space)) {
-            while (ValidMove(currBlock.transform) && !hardDropped) VerticalMove(Vector3.down);
-        } else if (Input.GetKeyUp(KeyCode.Space)) {
-            hardDropped = false;
+        if (!gameOver) {
+            if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
+                HorizontalMove(Vector3.left);
+                previousToLeft = Time.time;
+            } else if (Input.GetKey(KeyCode.RightArrow) && Time.time - previousToRight > 0.08f) {
+                HorizontalMove(Vector3.right);
+                previousToRight = Time.time;
+            } else if (Input.GetKeyDown(KeyCode.UpArrow)) {
+                Rotate();
+            } else if (Input.GetKeyDown(KeyCode.Space)) {
+                while (ValidMove(currBlock.transform) && !hardDropped) VerticalMove(Vector3.down);
+            } else if (Input.GetKeyUp(KeyCode.Space)) {
+                hardDropped = false;
+            }
+
+            if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
+                VerticalMove(Vector3.down);
+                previousTime = Time.time;
+            }
+
+            ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
+
+            int nextLevel = Mathf.RoundToInt((linesDeleted / N) + 1);
+
+            if (Int16.Parse(levelValue.text) < nextLevel) fallTime /= 1f + (Mathf.RoundToInt(linesDeleted / N) * 0.1f);
+
+            timeValue.text = Time.time.ToString();
+            levelValue.text = nextLevel.ToString();
+            linesValue.text = linesDeleted.ToString();
+            highscoreValue.text = score.ToString();
+            scoreValue.text = score.ToString();
         }
-
-        if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
-            VerticalMove(Vector3.down);
-            previousTime = Time.time;
-        }
-
-        ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
-
-        int nextLevel = Mathf.RoundToInt((linesDeleted / N) + 1);
-
-        if (Int16.Parse(levelValue.text) < nextLevel) fallTime /= 1f + (Mathf.RoundToInt(linesDeleted / N) * 0.1f);
-
-        timeValue.text = Time.time.ToString();
-        levelValue.text = nextLevel.ToString();
-        linesValue.text = linesDeleted.ToString();
-        highscoreValue.text = score.ToString();
-        scoreValue.text = score.ToString();
     }
 
     void Rotate() {
@@ -95,10 +98,14 @@ public class GameController : MonoBehaviour {
     }
 
     private void EndTurn() {
-        AddToGrid();
-        NewBlock();
-        CheckForLines();
-        hardDropped = true;
+        try {
+            AddToGrid();
+            NewBlock();
+            CheckForLines();
+            hardDropped = true;
+        } catch (GameOverException e) {
+            GameOver();
+        }
     }
 
     void AddToGrid() {
@@ -107,7 +114,10 @@ public class GameController : MonoBehaviour {
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
             TetrisBlock curr = Instantiate(deadBlock, new Vector3(roundedX, roundedY, 0), Quaternion.identity);
             grid[roundedY, roundedX] = curr;
+            currBlock.Destroy();
+            if (roundedX == 4 && roundedY == 18) gameOver = true;
         }
+        if (gameOver) throw new GameOverException();
     }
 
     void CheckForLines() {
@@ -175,13 +185,7 @@ public class GameController : MonoBehaviour {
     }
 
     private void NewBlock() {
-        if (currBlock != null) {
-            TetrisBlock t = currBlock;
-            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
-            t.Destroy();
-        } else {
-            currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
-        }
+        currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
         NewGhost();
         nextBlock = Random.Range(0, Blocks.Length);
     }
@@ -194,4 +198,17 @@ public class GameController : MonoBehaviour {
             ghostBlock = Instantiate(Ghosts[nextBlock], currBlock.transform.position, Quaternion.identity);
         }
     }
+
+    private void GameOver() {
+        if (ghostBlock != null) ghostBlock.Destroy();
+    }
+}
+
+[Serializable]
+public class GameOverException : Exception
+{
+    public GameOverException() { }
+
+    public GameOverException(string message)
+        : base(message) { }
 }
