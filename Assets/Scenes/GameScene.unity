@@ -1905,7 +1905,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fallTime: 0.8
-  N: 1
+  N: 10
   startPos: {x: 4, y: 18, z: 0}
   Blocks:
   - {fileID: 5147941206009720139, guid: 03b365a52f9e14a77a232947399fdd00, type: 3}

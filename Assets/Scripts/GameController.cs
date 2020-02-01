@@ -11,14 +11,14 @@ public class GameController : MonoBehaviour {
     private float previousToLeft;
     private float previousToRight;
     public float fallTime = 0.8f;
-    public float N = 1;
+    public float N = 10;
     public Vector3 startPos = new Vector3();
     public static int height = 20;
     public static int width = 10;
     private static int score = 0;
     private static int linesDeleted = 0;
     private static int[] scores = {0,40,100,300,1200};
-    private static readonly string textFile = @"/Users/i519144/code/personal/games/Tetris/Assets/Stages/Easy.txt";
+    private static readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
 
     private static TetrisBlock[,] grid = new TetrisBlock[height, width];
     private static int[,] stage = new int[height, width];
@@ -33,6 +33,7 @@ public class GameController : MonoBehaviour {
     private bool gameOver = false;
 
     public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue;
+    private bool isDestroying = false;
 
     void Start() {
         nextBlock = Random.Range(0, Blocks.Length);
@@ -75,8 +76,7 @@ public class GameController : MonoBehaviour {
                 VerticalMove(Vector3.down);
                 previousTime = Time.time;
             }
-
-            ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
+            if (!ghostBlock.IsDestroyed()) ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
 
             int nextLevel = Mathf.RoundToInt((linesDeleted / N) + 1);
 
@@ -120,7 +120,6 @@ public class GameController : MonoBehaviour {
     private void EndTurn() {
         try {
             AddToGrid();
-            NewBlock();
             CheckForLines();
             hardDropped = true;
         } catch (GameOverException e) {
@@ -133,9 +132,13 @@ public class GameController : MonoBehaviour {
         foreach (Transform children in currBlock.transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
+            Color currColor = children.GetComponent<SpriteRenderer>().color;
             TetrisBlock curr = Instantiate(deadBlock, new Vector3(roundedX, roundedY, 0), Quaternion.identity);
+            curr.sprite.GetComponent<SpriteRenderer>().color = currColor;
             grid[roundedY, roundedX] = curr;
             currBlock.Destroy();
+            ghostBlock.Destroy();
+
             if (roundedX == 4 && roundedY == 18) gameOver = true;
         }
         if (gameOver) throw new GameOverException();
@@ -146,12 +149,27 @@ public class GameController : MonoBehaviour {
         for (int y = height - 1; y >= 0; y--) {
             if (HasLine(y)) {
                 numLines++;
-                DeleteLine(y);
-                RowDown(y);
+                StartCoroutine(DeleteLine(y));
+                StartCoroutine(WaitForRowDown(y));
             }
         }
         score += scores[numLines] * Mathf.RoundToInt((linesDeleted / N) + 1);
         linesDeleted += numLines;
+        StartCoroutine(WaitForNewBlock());
+    }
+
+    private IEnumerator WaitForNewBlock() {
+        while (isDestroying) {
+            yield return new WaitForSeconds(0.03f);
+        }
+        NewBlock();
+    }
+
+    private IEnumerator WaitForRowDown(int y) {
+        while (isDestroying) {
+            yield return new WaitForSeconds(0.03f);
+        }
+        RowDown(y);
     }
 
     bool HasLine(int y) {
@@ -159,14 +177,45 @@ public class GameController : MonoBehaviour {
             if (grid[y, x] == null) return false;
         }
         return true;
-    }
+    }                           
 
-    void DeleteLine(int y) {
+    private IEnumerator DeleteLine(int y) {
+        isDestroying = true;
+        int[] destroyedBlocks = new int[1];
+        destroyedBlocks[0] = 0;
+        for (int x = 0; x < width; x++) {
+            if (grid[y, x] != null) {
+                StartCoroutine(DeleteLineEffect(grid[y, x], destroyedBlocks));
+                yield return new WaitForSeconds(0.05f);
+            }
+        }
+
+        while (destroyedBlocks[0] < 10) {
+            yield return new WaitForSeconds(0.05f);
+        }
         for (int x = 0; x < width; x++) {
             if (grid[y, x] != null) {
                 grid[y, x].Destroy();
                 grid[y, x] = null;
             }
+        }
+
+        isDestroying = false;
+        destroyedBlocks[0] = 0;
+    }
+
+    private IEnumerator DeleteLineEffect(TetrisBlock dead, int[] destroyedBlocks) {
+        Color tmp = dead.sprite.GetComponent<SpriteRenderer>().color;
+        float _progress = 1f;
+
+        while (_progress > 0.0f) {
+            dead.sprite.GetComponent<SpriteRenderer>().color = new Color(tmp.r, tmp.g, tmp.b, tmp.a * _progress);
+            _progress -= 0.1f;
+            yield return new WaitForSeconds(0.03f);
+        }
+
+        if (_progress < 0.0f && dead != null) {
+            destroyedBlocks[0]++;
         }
     }
 
@@ -186,7 +235,6 @@ public class GameController : MonoBehaviour {
         foreach (Transform children in transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
-
             if (roundedX < 0 || roundedX >= width || roundedY < 0 || roundedY >= height) {
                 return false;
             }
@@ -198,10 +246,10 @@ public class GameController : MonoBehaviour {
     }
 
     public Vector3 GhostPosition(Vector3 vec) {
-        int x = Mathf.RoundToInt(vec.x), y = Mathf.RoundToInt(vec.y), z = Mathf.RoundToInt(vec.z);
+        int x = Mathf.RoundToInt(vec.x), y = Math.Max(Mathf.RoundToInt(vec.y), 0), z = Mathf.RoundToInt(vec.z);
         ghostBlock.transform.position = new Vector3(x, y, z);
         while (ValidMove(ghostBlock.transform)) ghostBlock.transform.position += Vector3.down;
-
+        
         return ghostBlock.transform.position + Vector3.up;
     }
 
@@ -217,8 +265,8 @@ public class GameController : MonoBehaviour {
             ghostBlock = Instantiate(Ghosts[nextBlock], currBlock.transform.position, Quaternion.identity);
         } else {
             ghostBlock = Instantiate(Ghosts[nextBlock], currBlock.transform.position, Quaternion.identity);
-        }
     }
+}
 
     private void GameOver() {
         if (ghostBlock != null) ghostBlock.Destroy();
