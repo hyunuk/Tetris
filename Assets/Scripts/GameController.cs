@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -17,31 +18,10 @@ public class GameController : MonoBehaviour {
     private static int score = 0;
     private static int linesDeleted = 0;
     private static int[] scores = {0,40,100,300,1200};
+    private static readonly string textFile = @"/Users/i519144/code/personal/games/Tetris/Assets/Stages/Easy.txt";
 
     private static TetrisBlock[,] grid = new TetrisBlock[height, width];
-    private static int[,] stage = 
-        {
-            {1,1,1,0,0,0,0,1,1,1},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,1,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-            {0,0,0,0,0,0,0,0,0,0},
-        };
+    private static int[,] stage = new int[height, width];
 
     public TetrisBlock[] Blocks;
     public GhostBlock[] Ghosts;
@@ -61,10 +41,17 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
-        for (int y = 0; y < height; y++) {
-            for (int x = 0; x < width; x++) {
-                if (stage[y, x] == 1) grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+        if (File.Exists(textFile)) {
+            print(String.Format("File {0} exists.", textFile));
+            string[] lines = File.ReadAllLines(textFile);
+            for (int y = 0; y < height; y++) {
+                string[] pixels  = lines[y].Split(',');
+                for (int x = 0; x < width; x++) {
+                    if (Int16.Parse(pixels[x]) == 1) grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                }
             }
+        } else {
+            print(String.Format("File {0} does not exist!", textFile));
         }
     }
 
