@@ -20,11 +20,12 @@ public class GameController : MonoBehaviour {
     public static int width = 10;
     private static int score = 0;
     private static int linesDeleted = 0;
+    private static int numGems = 0;
     private static int[] scores = {0,40,100,300,1200};
     private static readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
     private static HashSet<int> deck = new HashSet<int>();
 
-    private static TetrisBlock[,] grid = new TetrisBlock[height, width];
+    private static Block[,] grid = new Block[height, width];
     private static int[,] stage = new int[height, width];
 
     public TetrisBlock[] Blocks;
@@ -34,18 +35,23 @@ public class GameController : MonoBehaviour {
     private int nextBlock;
     public TetrisBlock nextBlockObject;
     public TetrisBlock currBlock;
-    private GhostBlock ghostBlock;
     public TetrisBlock deadBlock;
-    private bool hardDropped = false;
-    private bool gameOver = false;
     public GameObject nextBlockBackground;
+    public GemBlock gemBlock;
+    private GhostBlock ghostBlock;
+    private bool hardDropped, gameOver, gameClear, isDestroying;
+    private ModeController controller;
 
-    public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue;
-    private bool isDestroying = false;
+    public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue, gameModeValue;
+
+    void Awake() {
+        controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
+        gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
+    }
 
     void Start() {
         NextBlock();
-        SetStage();
+        if (controller.GetMode() == ModeController.Mode.stage) SetStage();
         NewBlock();
     }
 
@@ -56,7 +62,6 @@ public class GameController : MonoBehaviour {
         deck.Add(nextBlock);
 
         if (nextBlockObject != null) nextBlockObject.Destroy();
-        //nextBlockObject = Instantiate(Blocks[nextBlock], new Vector3(12, 17, 0), Quaternion.identity);
         nextBlockObject = Instantiate(Blocks[nextBlock]);
         nextBlockObject.transform.parent = nextBlockBackground.transform;
         nextBlockObject.transform.localPosition = Pivots[nextBlock];
@@ -68,7 +73,17 @@ public class GameController : MonoBehaviour {
             for (int y = 0; y < height; y++) {
                 string[] pixels  = lines[y].Split(',');
                 for (int x = 0; x < width; x++) {
-                    if (Int16.Parse(pixels[x]) == 1) grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                    int blockType = Int16.Parse(pixels[x]);
+                    switch (blockType) {
+                        case 1:
+                            grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                            break;
+                        case 2:
+                            numGems++;
+                            grid[y, x] = Instantiate(gemBlock, new Vector3(x, y, 0), Quaternion.identity);
+                            break;
+                    }
+                    stage[y, x] = blockType;
                 }
             }
         } else {
@@ -77,7 +92,7 @@ public class GameController : MonoBehaviour {
     }
 
     void Update() {
-        if (!gameOver) {
+        if (!gameOver && !gameClear) {
             if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
                 HorizontalMove(Vector3.left);
                 previousToLeft = Time.time;
@@ -130,6 +145,7 @@ public class GameController : MonoBehaviour {
     }
 
     void VerticalMove(Vector3 nextMove) {
+        print(currBlock.transform.position);
         currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
@@ -143,8 +159,9 @@ public class GameController : MonoBehaviour {
             CheckForLines();
             hardDropped = true;
         } catch (GameOverException e) {
-            Console.WriteLine("Error: {0}", e);
             GameOver();
+        } catch (GameClearException e) {
+            GameClear();
         }
     }
 
@@ -217,6 +234,7 @@ public class GameController : MonoBehaviour {
             if (grid[y, x] != null) {
                 grid[y, x].Destroy();
                 grid[y, x] = null;
+                if (stage[y, x] == 2) if (--numGems == 0) gameClear = true;
             }
         }
 
@@ -224,7 +242,7 @@ public class GameController : MonoBehaviour {
         destroyedBlocks[0] = 0;
     }
 
-    private IEnumerator DeleteLineEffect(TetrisBlock dead, int[] destroyedBlocks) {
+    private IEnumerator DeleteLineEffect(Block dead, int[] destroyedBlocks) {
         Color tmp = dead.sprite.GetComponent<SpriteRenderer>().color;
         float _progress = 1f;
 
@@ -249,6 +267,7 @@ public class GameController : MonoBehaviour {
 				}
             }
         }
+        if (gameClear) throw new GameClearException();
     }
 
     bool ValidMove(Transform transform) {
@@ -289,7 +308,14 @@ public class GameController : MonoBehaviour {
 }
 
     private void GameOver() {
+        print("Game Over");
         if (ghostBlock != null) ghostBlock.Destroy();
+    }
+
+    private void GameClear() {
+        print("Game Clear");
+        if (ghostBlock != null) ghostBlock.Destroy();
+        // set panel active
     }
 }
 
@@ -299,5 +325,14 @@ public class GameOverException : Exception
     public GameOverException() { }
 
     public GameOverException(string message)
+        : base(message) { }
+}
+
+[Serializable]
+public class GameClearException : Exception
+{
+    public GameClearException() { }
+
+    public GameClearException(string message)
         : base(message) { }
 }

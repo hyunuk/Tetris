@@ -1,12 +1,10 @@
-﻿using UnityEngine;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class GhostBlock : MonoBehaviour {
-    internal void Destroy() {
-        foreach (Transform children in this.transform) {
-            Destroy(children.gameObject);
-        }
-    }
-
+public class GhostBlock : Block
+{
     internal bool IsDestroyed() {
         return transform.childCount == 0;
     }

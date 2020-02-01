@@ -4,22 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class TetrisBlock : MonoBehaviour {
-    public Vector3 rotationPoint;
-    public SpriteRenderer sprite;
-
-    void Start() {
-
-    }
-
-    // Update is called once per frame
-    void Update() {
-        
-    }
-
-    public void Destroy() {
-        foreach (Transform children in this.transform) {
-            Destroy(children.gameObject);
-        }
-    }
+public class TetrisBlock : Block
+{
+    
 }
