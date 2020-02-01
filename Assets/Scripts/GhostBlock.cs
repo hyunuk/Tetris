@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -16,10 +16,4 @@ public class GhostBlock : Block
     {
         
     }
-
-    // internal void Destroy() {
-    //     foreach (Transform children in this.transform) {
-    //         Destroy(children.gameObject);
-    //     }
-    // }
 }

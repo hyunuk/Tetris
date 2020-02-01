@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class TetrisBlock : Block {
     public Vector3 rotationPoint;
+    public SpriteRenderer sprite;
 
     void Start() {
 

@@ -637,7 +637,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 11.84
+  orthographic size: 20
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -661,7 +661,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.62, y: 9.35, z: -10}
+  m_LocalPosition: {x: 2, y: 9.35, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1323,8 +1323,8 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 967146549}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 12, y: 18, z: 0}
-  m_LocalScale: {x: 3, y: 3, z: 1}
+  m_LocalPosition: {x: 13, y: 17.5, z: 0}
+  m_LocalScale: {x: 4, y: 4, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
   m_RootOrder: 10
@@ -1987,7 +1987,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fallTime: 0.8
-  N: 1
+  N: 10
   startPos: {x: 4, y: 18, z: 0}
   Blocks:
   - {fileID: 5147941206009720139, guid: 03b365a52f9e14a77a232947399fdd00, type: 3}
@@ -2005,6 +2005,7 @@ MonoBehaviour:
   - {fileID: 7697296788045268168, guid: 5a0efc2fe989649fbbbb339abb77ace1, type: 3}
   - {fileID: 2727857867010006268, guid: 80ec99ae2f35f4e428cd3c5ae410f5a5, type: 3}
   - {fileID: -8131126896562175201, guid: 9117bceb169964bcf9bba75fb0155b2b, type: 3}
+  nextBlockObject: {fileID: 0}
   currBlock: {fileID: 0}
   deadBlock: {fileID: 2306410659138016273, guid: 5eabe4cd87357d34a8af303ed21693e5,
     type: 3}
