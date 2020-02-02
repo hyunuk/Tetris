@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Mode = Helper.Mode;
 
 public class ModeController : MonoBehaviour
 {
     static ModeController instance = null;
-    public enum Mode { stage, infinite };
     public Button stageMode, infiniteMode;
     private Mode mode = Mode.stage;
     
@@ -21,6 +21,7 @@ public class ModeController : MonoBehaviour
     }
 
     public void StartGame() {
+        FindObjectOfType<AudioManager>().Play("Start");
         SceneManager.LoadScene(1);
     }
 
@@ -29,6 +30,7 @@ public class ModeController : MonoBehaviour
     }
 
     public void SetMode(int mode) {
+        FindObjectOfType<AudioManager>().Play("MenuMove");
         this.mode = mode == 0 ? Mode.stage : Mode.infinite;
         switch (this.mode) {
             case Mode.stage:
