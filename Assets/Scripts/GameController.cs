@@ -29,7 +29,7 @@ public class GameController : MonoBehaviour {
     private Block[,] grid = new Block[height, width];
 
     public TetrisBlock[] Blocks;
-    private Vector3[] Pivots = new[] { new Vector3(-0.33f, 0f, 0f), new Vector3(-0.27f, -0.15f, 0f), new Vector3(-0.27f, 0.1f, 0f), new Vector3(-0.12f, -0.1f, 0f), new Vector3(-0.22f, -0.1f, 0f), new Vector3(-0.02f, -0.1f, 0f), new Vector3(-0.2f, 0.1f, 0f) };
+    private readonly Vector3[] Pivots = new[] { new Vector3(-0.33f, 0f, 0f), new Vector3(-0.27f, -0.15f, 0f), new Vector3(-0.27f, 0.1f, 0f), new Vector3(-0.12f, -0.1f, 0f), new Vector3(-0.22f, -0.1f, 0f), new Vector3(-0.02f, -0.1f, 0f), new Vector3(-0.2f, 0.1f, 0f) };
 
     public GhostBlock[] Ghosts;
     private int nextBlock;
@@ -162,7 +162,6 @@ public class GameController : MonoBehaviour {
         } catch (GameOverException e) {
             GameOver();
         } catch (GameClearException e) {
-            print("It got here!!!");
             GameClear();
         }
     }
