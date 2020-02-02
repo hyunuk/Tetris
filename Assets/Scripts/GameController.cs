@@ -12,7 +12,7 @@ using Quaternion = UnityEngine.Quaternion;
 using Mode = Helper.Mode;
 
 public class GameController : MonoBehaviour {
-    private readonly string STAGES_PATH = "Assets/Stages/";
+    private readonly string STAGES_PATH = "Assets/Scripts/Stages/";
     private readonly int[] scores = { 0, 40, 100, 300, 1200 };
     private readonly int NUM_OF_STAGES = 20;
 
