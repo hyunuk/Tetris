@@ -14,6 +14,7 @@ using Mode = Helper.Mode;
 public class GameController : MonoBehaviour {
     private readonly string STAGES_PATH = "Assets/Stages/";
     private readonly int[] scores = { 0, 40, 100, 300, 1200 };
+    private readonly int NUM_OF_STAGES = 20;
 
     public float fallTime = 0.8f;
     private float N = 20;
@@ -24,13 +25,10 @@ public class GameController : MonoBehaviour {
     private int score = 0;
     private int linesDeleted = 0;
     private int numGems = 0;
-
-    private float time;
+    private float playTime;
     
-    
-    private int stage = 0;
+    private int currStage = 0;
     private List<string> Stages = new List<string>();
-    private string textFile = Path.GetFullPath("Assets/Stages/1.txt");
     private HashSet<int> deck = new HashSet<int>();
 
     private Block[,] grid = new Block[Helper.HEIGHT, Helper.WIDTH];
@@ -45,14 +43,10 @@ public class GameController : MonoBehaviour {
     public GameObject nextBlockBackground, infoText, restartButton, resumeButton, pauseButton;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
-    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused;
+    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused, isShowingAnimation;
     private ModeController controller;
 
     public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue, gameModeValue;
-
-    void Awake() {
-        
-    }
 
     void Start() {
         InitGame();
@@ -62,7 +56,7 @@ public class GameController : MonoBehaviour {
         FindObjectOfType<AudioManager>().Play("GameStart");
         controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
         gameModeValue.text = (controller.GetMode() == Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
-        for (int i = 1; i <= 20; i++) {
+        for (int i = 1; i <= NUM_OF_STAGES; i++) {
             string path = Path.GetFullPath(STAGES_PATH + i + ".txt");
             Stages.Add(path);
         }
@@ -71,7 +65,8 @@ public class GameController : MonoBehaviour {
         resumeButton.SetActive(false);
         gameOver = false;
         gameClear = false;
-        time = 0;
+        isShowingAnimation = false;
+        playTime = 0;
         linesDeleted = 0;
         score = 0;
         if (currBlock != null) currBlock.Destroy();
@@ -105,7 +100,7 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
-        textFile = Stages[stage];
+        string textFile = Stages[currStage];
         if (File.Exists(textFile)) {
             string[] lines = File.ReadAllLines(textFile);
             for (int y = 0; y < Helper.HEIGHT; y++) {
@@ -135,8 +130,8 @@ public class GameController : MonoBehaviour {
 
     void Update() {
         if (controller.GetMode() == Mode.stage && numGems == 0) gameClear = true;
-        if (!gameOver && !gameClear && isPaused && Input.GetKeyDown(KeyCode.P)) Resume();
-        else if (!gameOver && !gameClear && !isPaused) {
+        if (isPaused && Input.GetKeyDown(KeyCode.P)) Resume();
+        else if (!gameOver && !gameClear && !isPaused && !isShowingAnimation) {
             if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
                 HorizontalMove(Vector3.left);
                 previousToLeft = Time.time;
@@ -163,9 +158,9 @@ public class GameController : MonoBehaviour {
 
             if (Int16.Parse(levelValue.text) < nextLevel) fallTime /= 1f + (Mathf.RoundToInt(linesDeleted / N) * 0.1f);
 
-            time += Time.deltaTime;
+            playTime += Time.deltaTime;
 
-            timeValue.text = time.ToString();
+            timeValue.text = playTime.ToString();
             levelValue.text = nextLevel.ToString();
             linesValue.text = linesDeleted.ToString();
             highscoreValue.text = score.ToString();
@@ -228,6 +223,8 @@ public class GameController : MonoBehaviour {
     }
 
     void CheckForLines() {
+        isShowingAnimation = true;
+
         int numLines = 0;
         for (int y = Helper.HEIGHT - 1; y >= 0; y--) {
             if (HasLine(y)) {
@@ -239,6 +236,7 @@ public class GameController : MonoBehaviour {
         score += scores[numLines] * Mathf.RoundToInt((linesDeleted / N) + 1);
         linesDeleted += numLines;
         StartCoroutine(WaitForNewBlock());
+        print(isShowingAnimation);
     }
 
     private IEnumerator WaitForNewBlock() {
@@ -341,6 +339,9 @@ public class GameController : MonoBehaviour {
         currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
         NewGhost();
         NextBlock();
+        isShowingAnimation = false;
+        print(isShowingAnimation);
+
     }
 
     private void NewGhost() {
@@ -379,7 +380,7 @@ public class GameController : MonoBehaviour {
         yield return new WaitForSeconds(0.5f);
         infoText.GetComponent<TextMeshProUGUI>().text = "1";
         yield return new WaitForSeconds(0.5f);
-        stage++;
+        currStage++;
         InitGame();
     }
 
