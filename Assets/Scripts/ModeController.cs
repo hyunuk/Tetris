@@ -9,7 +9,7 @@ public class ModeController : MonoBehaviour
 {
     static ModeController instance = null;
     public Button stageMode, infiniteMode;
-    private Mode mode = Mode.stage;
+    private static Mode mode = Mode.stage;
     
     private void Awake()
     {

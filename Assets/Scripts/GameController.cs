@@ -28,6 +28,7 @@ public class GameController : MonoBehaviour {
     private float playTime;
     
     private int currStage = 0;
+
     private HashSet<int> deck = new HashSet<int>();
 
     private Block[,] grid = new Block[Helper.HEIGHT, Helper.WIDTH];
@@ -47,7 +48,6 @@ public class GameController : MonoBehaviour {
     public Text timeValue, levelValue, linesValue, stageValue, scoreValue, gameModeValue;
 
     void Start() {
-        print("Start");
         muteButton.SetActive(true);
         speakerButton.SetActive(false);
         InitGame();
@@ -194,8 +194,6 @@ public class GameController : MonoBehaviour {
     }
 
     void VerticalMove(Vector3 nextMove) {
-        print("VerticalMove");
-        print(currBlock.transform.position);
         currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
@@ -357,8 +355,6 @@ public class GameController : MonoBehaviour {
         NewGhost();
         NextBlock();
         isShowingAnimation = false;
-        print(isShowingAnimation);
-
     }
 
     private void NewGhost() {
@@ -372,7 +368,6 @@ public class GameController : MonoBehaviour {
 }
 
     private void GameOver() {
-        print("GameOver");
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME OVER";
@@ -381,7 +376,6 @@ public class GameController : MonoBehaviour {
     }
 
     private void GameClear() {
-        print("GameClear");
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME CLEAR";
