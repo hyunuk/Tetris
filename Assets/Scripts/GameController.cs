@@ -28,7 +28,6 @@ public class GameController : MonoBehaviour {
     private float playTime;
     
     private int currStage = 0;
-    private List<string> Stages = new List<string>();
     private HashSet<int> deck = new HashSet<int>();
 
     private Block[,] grid = new Block[Helper.HEIGHT, Helper.WIDTH];
@@ -59,10 +58,6 @@ public class GameController : MonoBehaviour {
         FindObjectOfType<AudioManager>().Play("GameStart");
         controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
         gameModeValue.text = (controller.GetMode() == Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
-        for (int i = 1; i <= NUM_OF_STAGES; i++) {
-            string path = Path.GetFullPath(STAGES_PATH + i + ".txt");
-            Stages.Add(path);
-        }
         infoText.SetActive(false);
         restartButton.SetActive(false);
         resumeButton.SetActive(false);
@@ -117,33 +112,24 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
-        string textFile = Stages[currStage];
-
-        if (File.Exists(textFile)) {
-            string[] lines = File.ReadAllLines(textFile);
-            for (int y = 0; y < Helper.HEIGHT; y++) {
-                string[] pixels  = lines[y].Split(',');
-                for (int x = 0; x < Helper.WIDTH; x++) {
-                    if (grid[Helper.HEIGHT - y - 1, x] != null) grid[Helper.HEIGHT - y - 1, x].Destroy();
-                    int blockType = Int16.Parse(pixels[x]);
-                    switch (blockType) {
-                        case 0:
-                            grid[Helper.HEIGHT - y - 1, x] = null;
-                            break;
-                        case 1:
-                            grid[Helper.HEIGHT - y - 1, x] = Instantiate(deadBlock, new Vector3(x, Helper.HEIGHT - y - 1, 0), Quaternion.identity);
-                            break;
-                        case 2:
-                            numGems++;
-                            grid[Helper.HEIGHT - y - 1, x] = Instantiate(gemBlock, new Vector3(x, Helper.HEIGHT - y - 1, 0), Quaternion.identity);
-                            break;
-                    }
+        for (int y = 0; y < Helper.HEIGHT; y++) {
+            for (int x = 0; x < Helper.WIDTH; x++) {
+                if (grid[y, x] != null) grid[y, x].Destroy();
+                int blockType = Helper.Stages[currStage, Helper.HEIGHT - y - 1, x];
+                switch (blockType) {
+                    case 0:
+                        grid[y, x] = null;
+                        break;
+                    case 1:
+                        grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                        break;
+                    case 2:
+                        numGems++;
+                        grid[y, x] = Instantiate(gemBlock, new Vector3(x, y, 0), Quaternion.identity);
+                        break;
                 }
             }
-        } else {
-            print(String.Format("File {0} does not exist!", textFile));
         }
-        print(String.Format("Initial # of gems: {0}", numGems));
     }
 
     void Update() {
