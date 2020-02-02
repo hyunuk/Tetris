@@ -9,7 +9,7 @@ public class ModeController : MonoBehaviour
 {
     static ModeController instance = null;
     public Button stageMode, infiniteMode;
-    private Mode mode = Mode.stage;
+    private static Mode mode = Mode.stage;
     
     private void Awake()
     {
@@ -29,10 +29,10 @@ public class ModeController : MonoBehaviour
         return mode;
     }
 
-    public void SetMode(int mode) {
+    public void SetMode(int modeNum) {
         FindObjectOfType<AudioManager>().Play("MenuMove");
-        this.mode = mode == 0 ? Mode.stage : Mode.infinite;
-        switch (this.mode) {
+        mode = modeNum == 0 ? Mode.stage : Mode.infinite;
+        switch (mode) {
             case Mode.stage:
                 stageMode.interactable = false;
                 infiniteMode.interactable = true;

@@ -48,16 +48,15 @@ public class GameController : MonoBehaviour {
     public Text timeValue, levelValue, linesValue, stageValue, scoreValue, gameModeValue;
 
     void Start() {
-        print("Start");
         muteButton.SetActive(true);
         speakerButton.SetActive(false);
         InitGame();
     }
 
     void InitGame() {
-        print("InitGame");
         FindObjectOfType<AudioManager>().Play("GameStart");
         controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
+        print(controller.GetMode());
         gameModeValue.text = (controller.GetMode() == Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
         for (int i = 1; i <= NUM_OF_STAGES; i++) {
             string path = Path.GetFullPath(STAGES_PATH + i + ".txt");
@@ -104,7 +103,6 @@ public class GameController : MonoBehaviour {
     }
 
     void NextBlock() {
-        print("NextBlock");
         if (deck.Count == Blocks.Length) deck.Clear();
         do nextBlock = Random.Range(0, Blocks.Length);
         while (deck.Contains(nextBlock));
@@ -117,6 +115,7 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
+        print("SetStage in!");
         string textFile = Stages[currStage];
 
         if (File.Exists(textFile)) {
@@ -187,7 +186,6 @@ public class GameController : MonoBehaviour {
     }
 
     void Rotate() {
-        print("Rotate");
         Transform currTransform = currBlock.transform;
         currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
         ghostBlock.transform.RotateAround(ghostBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
@@ -200,7 +198,6 @@ public class GameController : MonoBehaviour {
     }
 
     void HorizontalMove(Vector3 nextMove) {
-        print("HorizontalMove");
         currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
@@ -208,8 +205,6 @@ public class GameController : MonoBehaviour {
     }
 
     void VerticalMove(Vector3 nextMove) {
-        print("VerticalMove");
-        print(currBlock.transform.position);
         currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
@@ -218,7 +213,6 @@ public class GameController : MonoBehaviour {
     }
 
     private void EndTurn() {
-        print("EndTurn");
         try {
             AddToGrid();
             CheckForLines();
@@ -230,7 +224,6 @@ public class GameController : MonoBehaviour {
     }
 
     void AddToGrid() {
-        print("AddToGrid");
         foreach (Transform children in currBlock.transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
@@ -260,11 +253,9 @@ public class GameController : MonoBehaviour {
         score += scores[numLines] * Mathf.RoundToInt((linesDeleted / N) + 1);
         linesDeleted += numLines;
         StartCoroutine(WaitForNewBlock());
-        print(isShowingAnimation);
     }
 
     private IEnumerator WaitForNewBlock() {
-        print("WaitForNewBlock");
         while (isDestroying) {
             yield return new WaitForSeconds(0.03f);
         }
@@ -272,7 +263,6 @@ public class GameController : MonoBehaviour {
     }
 
     private IEnumerator WaitForRowDown(int y) {
-        print("WaitForRowDown");
         while (isDestroying) {
             yield return new WaitForSeconds(0.03f);
         }
@@ -287,7 +277,6 @@ public class GameController : MonoBehaviour {
     }                           
 
     private IEnumerator DeleteLine(int y) {
-        print("DeleteLine");
         isDestroying = true;
         int[] destroyedBlocks = new int[1];
         destroyedBlocks[0] = 0;
@@ -313,7 +302,6 @@ public class GameController : MonoBehaviour {
     }
 
     private IEnumerator DeleteLineEffect(Block dead, int[] destroyedBlocks) {
-        print("DeleteLineEffect");
         Color tmp = dead.sprite.GetComponent<SpriteRenderer>().color;
         float _progress = 1f;
 
@@ -341,7 +329,6 @@ public class GameController : MonoBehaviour {
     }
 
     bool ValidMove(Transform transform) {
-        print("ValidMove");
         foreach (Transform children in transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
@@ -356,7 +343,6 @@ public class GameController : MonoBehaviour {
     }
 
     public Vector3 GhostPosition(Vector3 vec) {
-        print("GhostPosition");
         int x = Mathf.RoundToInt(vec.x), y = Math.Max(Mathf.RoundToInt(vec.y), 0), z = Mathf.RoundToInt(vec.z);
         ghostBlock.transform.position = new Vector3(x, y, z);
         while (ValidMove(ghostBlock.transform)) ghostBlock.transform.position += Vector3.down;
@@ -365,18 +351,15 @@ public class GameController : MonoBehaviour {
     }
 
     private void NewBlock() {
-        print("NewBlock");
         if (gameClear) GameClear();
         currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
         NewGhost();
         NextBlock();
         isShowingAnimation = false;
-        print(isShowingAnimation);
 
     }
 
     private void NewGhost() {
-        print("NewGhost");
         if (ghostBlock != null) {
             ghostBlock.Destroy();
             ghostBlock = Instantiate(Ghosts[nextBlock], currBlock.transform.position, Quaternion.identity);
@@ -386,7 +369,6 @@ public class GameController : MonoBehaviour {
 }
 
     private void GameOver() {
-        print("GameOver");
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME OVER";
@@ -395,7 +377,6 @@ public class GameController : MonoBehaviour {
     }
 
     private void GameClear() {
-        print("GameClear");
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME CLEAR";
