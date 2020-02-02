@@ -5,6 +5,7 @@ using System.IO;
 using System.Numerics;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 using Quaternion = UnityEngine.Quaternion;
@@ -14,29 +15,28 @@ public class GameController : MonoBehaviour {
     private float previousToLeft;
     private float previousToRight;
     public float fallTime = 0.8f;
-    public float N = 10;
+    private float N = 20;
     public Vector3 startPos = new Vector3();
-    public static int height = 20;
-    public static int width = 10;
-    private static int score = 0;
-    private static int linesDeleted = 0;
-    private static int numGems = 0;
-    private static int[] scores = {0,40,100,300,1200};
-    private static readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
-    private static HashSet<int> deck = new HashSet<int>();
+    public static readonly int height = 20;
+    public static readonly int width = 10;
+    private int score = 0;
+    private int linesDeleted = 0;
+    private int numGems = 0;
+    private readonly int[] scores = {0,40,100,300,1200};
+    private readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
+    private HashSet<int> deck = new HashSet<int>();
 
-    private static Block[,] grid = new Block[height, width];
-    private static int[,] stage = new int[height, width];
+    private Block[,] grid = new Block[height, width];
 
     public TetrisBlock[] Blocks;
-    private Vector3[] Pivots = new[] { new Vector3(-0.33f, 0f, 0f), new Vector3(-0.27f, -0.15f, 0f), new Vector3(-0.27f, 0.1f, 0f), new Vector3(-0.12f, -0.1f, 0f), new Vector3(-0.22f, -0.1f, 0f), new Vector3(-0.02f, -0.1f, 0f), new Vector3(-0.2f, 0.1f, 0f) };
+    private readonly Vector3[] Pivots = new[] { new Vector3(-0.33f, 0f, 0f), new Vector3(-0.27f, -0.15f, 0f), new Vector3(-0.27f, 0.1f, 0f), new Vector3(-0.12f, -0.1f, 0f), new Vector3(-0.22f, -0.1f, 0f), new Vector3(-0.02f, -0.1f, 0f), new Vector3(-0.2f, 0.1f, 0f) };
 
     public GhostBlock[] Ghosts;
     private int nextBlock;
     public TetrisBlock nextBlockObject;
     public TetrisBlock currBlock;
     public TetrisBlock deadBlock;
-    public GameObject nextBlockBackground;
+    public GameObject nextBlockBackground, infoText;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
     private bool hardDropped, gameOver, gameClear, isDestroying;
@@ -47,6 +47,7 @@ public class GameController : MonoBehaviour {
     void Awake() {
         controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
         gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
+        infoText.SetActive(false);
     }
 
     void Start() {
@@ -76,22 +77,23 @@ public class GameController : MonoBehaviour {
                     int blockType = Int16.Parse(pixels[x]);
                     switch (blockType) {
                         case 1:
-                            grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                            grid[height - y - 1, x] = Instantiate(deadBlock, new Vector3(x, height - y - 1, 0), Quaternion.identity);
                             break;
                         case 2:
                             numGems++;
-                            grid[y, x] = Instantiate(gemBlock, new Vector3(x, y, 0), Quaternion.identity);
+                            grid[height - y - 1, x] = Instantiate(gemBlock, new Vector3(x, height - y - 1, 0), Quaternion.identity);
                             break;
                     }
-                    stage[y, x] = blockType;
                 }
             }
         } else {
             print(String.Format("File {0} does not exist!", textFile));
         }
+        print(String.Format("Initial # of gems: {0}", numGems));
     }
 
     void Update() {
+        if (numGems == 0) gameClear = true;
         if (!gameOver && !gameClear) {
             if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
                 HorizontalMove(Vector3.left);
@@ -232,12 +234,11 @@ public class GameController : MonoBehaviour {
         }
         for (int x = 0; x < width; x++) {
             if (grid[y, x] != null) {
+                if (grid[y, x].transform.GetComponent<GemBlock>() != null) numGems--;
                 grid[y, x].Destroy();
                 grid[y, x] = null;
-                if (stage[y, x] == 2) if (--numGems == 0) gameClear = true;
             }
         }
-
         isDestroying = false;
         destroyedBlocks[0] = 0;
     }
@@ -293,6 +294,7 @@ public class GameController : MonoBehaviour {
     }
 
     private void NewBlock() {
+        if (gameClear) GameClear();
         currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
         NewGhost();
         NextBlock();
@@ -310,12 +312,15 @@ public class GameController : MonoBehaviour {
     private void GameOver() {
         print("Game Over");
         if (ghostBlock != null) ghostBlock.Destroy();
+        infoText.SetActive(true);
+        infoText.GetComponent<TextMeshProUGUI>().text = "GAME OVER";
     }
 
     private void GameClear() {
         print("Game Clear");
         if (ghostBlock != null) ghostBlock.Destroy();
-        // set panel active
+        infoText.SetActive(true);
+        infoText.GetComponent<TextMeshProUGUI>().text = "GAME CLEAR";
     }
 }
 
