@@ -24,7 +24,7 @@ public class ModeController : MonoBehaviour
     }
 
     public void StartGame() {
-        SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+        SceneManager.LoadScene(1);
     }
 
     public Mode GetMode() {

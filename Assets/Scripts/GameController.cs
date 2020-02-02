@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -24,7 +25,7 @@ public class GameController : MonoBehaviour {
     private int numGems = 0;
     private readonly int[] scores = {0,40,100,300,1200};
     private ArrayList Stages = new ArrayList();
-    private readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
+    private readonly string textFile = Path.GetFullPath("Assets/Stages/1.txt");
     private HashSet<int> deck = new HashSet<int>();
 
     private Block[,] grid = new Block[height, width];
@@ -37,7 +38,7 @@ public class GameController : MonoBehaviour {
     public TetrisBlock nextBlockObject;
     public TetrisBlock currBlock;
     public TetrisBlock deadBlock;
-    public GameObject nextBlockBackground, infoText;
+    public GameObject nextBlockBackground, infoText, restartButton;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
     private bool hardDropped, gameOver, gameClear, isDestroying;
@@ -49,6 +50,7 @@ public class GameController : MonoBehaviour {
         controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
         gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
         infoText.SetActive(false);
+        restartButton.SetActive(false);
     }
 
     void Start() {
@@ -100,7 +102,7 @@ public class GameController : MonoBehaviour {
     }
 
     void Update() {
-        if (numGems == 0) gameClear = true;
+        if (controller.GetMode() == ModeController.Mode.stage && numGems == 0) gameClear = true;
         if (!gameOver && !gameClear) {
             if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
                 HorizontalMove(Vector3.left);
@@ -167,10 +169,8 @@ public class GameController : MonoBehaviour {
             AddToGrid();
             CheckForLines();
             hardDropped = true;
-        } catch (GameOverException e) {
+        } catch(GameOverException e) {
             GameOver();
-        } catch (GameClearException e) {
-            GameClear();
         }
     }
 
@@ -275,7 +275,6 @@ public class GameController : MonoBehaviour {
 				}
             }
         }
-        if (gameClear) throw new GameClearException();
     }
 
     bool ValidMove(Transform transform) {
@@ -321,6 +320,7 @@ public class GameController : MonoBehaviour {
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME OVER";
+        restartButton.SetActive(true);
     }
 
     private void GameClear() {
@@ -328,6 +328,10 @@ public class GameController : MonoBehaviour {
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME CLEAR";
+    }
+
+    public void GoBack() {
+        SceneManager.LoadScene(0);
     }
 }
 
@@ -337,14 +341,5 @@ public class GameOverException : Exception
     public GameOverException() { }
 
     public GameOverException(string message)
-        : base(message) { }
-}
-
-[Serializable]
-public class GameClearException : Exception
-{
-    public GameClearException() { }
-
-    public GameClearException(string message)
         : base(message) { }
 }
