@@ -13,10 +13,7 @@ public class ModeController : MonoBehaviour
     
     private void Awake()
     {
-        if (instance != null) {
-            Debug.Log("ModeController instance has been destroyed");
-            Destroy(gameObject);
-        } else {
+        if (instance == null) {
             Debug.Log("ModeController instance has been assigned");
             instance = this;
             GameObject.DontDestroyOnLoad(gameObject);
@@ -24,7 +21,7 @@ public class ModeController : MonoBehaviour
     }
 
     public void StartGame() {
-        SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+        SceneManager.LoadScene(1);
     }
 
     public Mode GetMode() {

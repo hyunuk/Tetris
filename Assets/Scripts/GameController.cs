@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -11,9 +12,8 @@ using Quaternion = UnityEngine.Quaternion;
 
 public class GameController : MonoBehaviour {
     private readonly string STAGES_PATH = "Assets/Stages/";
-    private float previousTime;
-    private float previousToLeft;
-    private float previousToRight;
+    private float previousTime, previousToLeft, previousToRight;
+    private float time;
     public float fallTime = 0.8f;
     private float N = 20;
     public Vector3 startPos = new Vector3();
@@ -22,9 +22,10 @@ public class GameController : MonoBehaviour {
     private int score = 0;
     private int linesDeleted = 0;
     private int numGems = 0;
+    private int stage = 0;
     private readonly int[] scores = {0,40,100,300,1200};
-    private ArrayList Stages = new ArrayList();
-    private readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
+    private List<string> Stages = new List<string>();
+    private string textFile = Path.GetFullPath("Assets/Stages/1.txt");
     private HashSet<int> deck = new HashSet<int>();
 
     private Block[,] grid = new Block[height, width];
@@ -37,24 +38,54 @@ public class GameController : MonoBehaviour {
     public TetrisBlock nextBlockObject;
     public TetrisBlock currBlock;
     public TetrisBlock deadBlock;
-    public GameObject nextBlockBackground, infoText;
+    public GameObject nextBlockBackground, infoText, restartButton, resumeButton, pauseButton;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
-    private bool hardDropped, gameOver, gameClear, isDestroying;
+    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused;
     private ModeController controller;
 
     public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue, gameModeValue;
 
     void Awake() {
-        controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
-        gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
-        infoText.SetActive(false);
+        
     }
 
     void Start() {
+        InitGame();
+    }
+
+    void InitGame() {
+        FindObjectOfType<AudioManager>().Play("GameStart");
+        controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
+        gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
+        for (int i = 1; i <= 20; i++) {
+            string path = Path.GetFullPath(STAGES_PATH + i + ".txt");
+            Stages.Add(path);
+        }
+        infoText.SetActive(false);
+        restartButton.SetActive(false);
+        resumeButton.SetActive(false);
+        gameOver = false;
+        gameClear = false;
+        time = 0;
+        linesDeleted = 0;
+        score = 0;
+        if (currBlock != null) currBlock.Destroy();
         NextBlock();
         if (controller.GetMode() == ModeController.Mode.stage) SetStage();
         NewBlock();
+    }
+
+    public void Pause() {
+        isPaused = true;
+        pauseButton.SetActive(false);
+        resumeButton.SetActive(true);
+    }
+
+    public void Resume() {
+        isPaused = false;
+        resumeButton.SetActive(false);
+        pauseButton.SetActive(true);
     }
 
     void NextBlock() {
@@ -70,19 +101,18 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
-        for (int i = 1; i <= 20; i++) {
-            string stage = Path.GetFullPath(STAGES_PATH + i + ".txt");
-            Stages.Add(stage);
-            
-        }
-
+        textFile = Stages[stage];
         if (File.Exists(textFile)) {
             string[] lines = File.ReadAllLines(textFile);
             for (int y = 0; y < height; y++) {
                 string[] pixels  = lines[y].Split(',');
                 for (int x = 0; x < width; x++) {
+                    if (grid[height - y - 1, x] != null) grid[height - y - 1, x].Destroy();
                     int blockType = Int16.Parse(pixels[x]);
                     switch (blockType) {
+                        case 0:
+                            grid[height - y - 1, x] = null;
+                            break;
                         case 1:
                             grid[height - y - 1, x] = Instantiate(deadBlock, new Vector3(x, height - y - 1, 0), Quaternion.identity);
                             break;
@@ -100,8 +130,9 @@ public class GameController : MonoBehaviour {
     }
 
     void Update() {
-        if (numGems == 0) gameClear = true;
-        if (!gameOver && !gameClear) {
+        if (controller.GetMode() == ModeController.Mode.stage && numGems == 0) gameClear = true;
+        if (!gameOver && !gameClear && isPaused && Input.GetKeyDown(KeyCode.P)) Resume();
+        else if (!gameOver && !gameClear && !isPaused) {
             if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
                 HorizontalMove(Vector3.left);
                 previousToLeft = Time.time;
@@ -114,6 +145,8 @@ public class GameController : MonoBehaviour {
                 while (ValidMove(currBlock.transform) && !hardDropped) VerticalMove(Vector3.down);
             } else if (Input.GetKeyUp(KeyCode.Space)) {
                 hardDropped = false;
+            } else if (Input.GetKeyDown(KeyCode.P)) {
+                Pause();
             }
 
             if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
@@ -126,7 +159,9 @@ public class GameController : MonoBehaviour {
 
             if (Int16.Parse(levelValue.text) < nextLevel) fallTime /= 1f + (Mathf.RoundToInt(linesDeleted / N) * 0.1f);
 
-            timeValue.text = Time.time.ToString();
+            time += Time.deltaTime;
+
+            timeValue.text = time.ToString();
             levelValue.text = nextLevel.ToString();
             linesValue.text = linesDeleted.ToString();
             highscoreValue.text = score.ToString();
@@ -167,10 +202,8 @@ public class GameController : MonoBehaviour {
             AddToGrid();
             CheckForLines();
             hardDropped = true;
-        } catch (GameOverException e) {
+        } catch(GameOverException e) {
             GameOver();
-        } catch (GameClearException e) {
-            GameClear();
         }
     }
 
@@ -275,7 +308,6 @@ public class GameController : MonoBehaviour {
 				}
             }
         }
-        if (gameClear) throw new GameClearException();
     }
 
     bool ValidMove(Transform transform) {
@@ -321,6 +353,8 @@ public class GameController : MonoBehaviour {
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME OVER";
+        FindObjectOfType<AudioManager>().Stop("GameStart");
+        restartButton.SetActive(true);
     }
 
     private void GameClear() {
@@ -328,6 +362,25 @@ public class GameController : MonoBehaviour {
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME CLEAR";
+        FindObjectOfType<AudioManager>().Stop("GameStart");
+        FindObjectOfType<AudioManager>().Play("GameClear");
+        StartCoroutine(CountDown());
+    }
+
+    private IEnumerator CountDown() {
+        yield return new WaitForSeconds(0.5f);
+        infoText.GetComponent<TextMeshProUGUI>().text = "3";
+        yield return new WaitForSeconds(0.5f);
+        infoText.GetComponent<TextMeshProUGUI>().text = "2";
+        yield return new WaitForSeconds(0.5f);
+        infoText.GetComponent<TextMeshProUGUI>().text = "1";
+        yield return new WaitForSeconds(0.5f);
+        stage++;
+        InitGame();
+    }
+
+    public void GoBack() {
+        SceneManager.LoadScene(0);
     }
 }
 
@@ -337,14 +390,5 @@ public class GameOverException : Exception
     public GameOverException() { }
 
     public GameOverException(string message)
-        : base(message) { }
-}
-
-[Serializable]
-public class GameClearException : Exception
-{
-    public GameClearException() { }
-
-    public GameClearException(string message)
         : base(message) { }
 }
