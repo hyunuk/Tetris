@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Mode = Helper.Mode;
 
 public class ModeController : MonoBehaviour
 {
     static ModeController instance = null;
-    public enum Mode { stage, infinite };
     public Button stageMode, infiniteMode;
     private Mode mode = Mode.stage;
     
