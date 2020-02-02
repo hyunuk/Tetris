@@ -22,9 +22,10 @@ public class GameController : MonoBehaviour {
     private int score = 0;
     private int linesDeleted = 0;
     private int numGems = 0;
+    private int stage = 0;
     private readonly int[] scores = {0,40,100,300,1200};
-    private ArrayList Stages = new ArrayList();
-    private readonly string textFile = Path.GetFullPath("Assets/Stages/1.txt");
+    private List<string> Stages = new List<string>();
+    private string textFile = Path.GetFullPath("Assets/Stages/1.txt");
     private HashSet<int> deck = new HashSet<int>();
 
     private Block[,] grid = new Block[height, width];
@@ -46,14 +47,30 @@ public class GameController : MonoBehaviour {
     public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue, gameModeValue;
 
     void Awake() {
-        controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
-        gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
-        infoText.SetActive(false);
-        restartButton.SetActive(false);
-        resumeButton.SetActive(false);
+        
     }
 
     void Start() {
+        // NextBlock();
+        // if (controller.GetMode() == ModeController.Mode.stage) SetStage();
+        // NewBlock();
+        InitGame();
+    }
+
+    void InitGame() {
+        FindObjectOfType<AudioManager>().Play("GameStart");
+        controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
+        gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
+        for (int i = 1; i <= 20; i++) {
+            string path = Path.GetFullPath(STAGES_PATH + i + ".txt");
+            Stages.Add(path);
+        }
+        infoText.SetActive(false);
+        restartButton.SetActive(false);
+        resumeButton.SetActive(false);
+        gameOver = false;
+        gameClear = false;
+        if (currBlock != null) currBlock.Destroy();
         NextBlock();
         if (controller.GetMode() == ModeController.Mode.stage) SetStage();
         NewBlock();
@@ -84,19 +101,18 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
-        for (int i = 1; i <= 20; i++) {
-            string stage = Path.GetFullPath(STAGES_PATH + i + ".txt");
-            Stages.Add(stage);
-            
-        }
-
+        textFile = Stages[stage];
         if (File.Exists(textFile)) {
             string[] lines = File.ReadAllLines(textFile);
             for (int y = 0; y < height; y++) {
                 string[] pixels  = lines[y].Split(',');
                 for (int x = 0; x < width; x++) {
+                    if (grid[height - y - 1, x] != null) grid[height - y - 1, x].Destroy();
                     int blockType = Int16.Parse(pixels[x]);
                     switch (blockType) {
+                        case 0:
+                            grid[height - y - 1, x] = null;
+                            break;
                         case 1:
                             grid[height - y - 1, x] = Instantiate(deadBlock, new Vector3(x, height - y - 1, 0), Quaternion.identity);
                             break;
@@ -337,6 +353,7 @@ public class GameController : MonoBehaviour {
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME OVER";
+        FindObjectOfType<AudioManager>().Stop("GameStart");
         restartButton.SetActive(true);
     }
 
@@ -345,6 +362,21 @@ public class GameController : MonoBehaviour {
         if (ghostBlock != null) ghostBlock.Destroy();
         infoText.SetActive(true);
         infoText.GetComponent<TextMeshProUGUI>().text = "GAME CLEAR";
+        FindObjectOfType<AudioManager>().Stop("GameStart");
+        FindObjectOfType<AudioManager>().Play("GameClear");
+        StartCoroutine(CountDown());
+    }
+
+    private IEnumerator CountDown() {
+        yield return new WaitForSeconds(0.5f);
+        infoText.GetComponent<TextMeshProUGUI>().text = "3";
+        yield return new WaitForSeconds(0.5f);
+        infoText.GetComponent<TextMeshProUGUI>().text = "2";
+        yield return new WaitForSeconds(0.5f);
+        infoText.GetComponent<TextMeshProUGUI>().text = "1";
+        yield return new WaitForSeconds(0.5f);
+        stage++;
+        InitGame();
     }
 
     public void GoBack() {
