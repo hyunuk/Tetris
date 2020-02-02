@@ -51,9 +51,6 @@ public class GameController : MonoBehaviour {
     }
 
     void Start() {
-        // NextBlock();
-        // if (controller.GetMode() == ModeController.Mode.stage) SetStage();
-        // NewBlock();
         InitGame();
     }
 
@@ -70,6 +67,9 @@ public class GameController : MonoBehaviour {
         resumeButton.SetActive(false);
         gameOver = false;
         gameClear = false;
+        time = 0;
+        linesDeleted = 0;
+        score = 0;
         if (currBlock != null) currBlock.Destroy();
         NextBlock();
         if (controller.GetMode() == ModeController.Mode.stage) SetStage();
