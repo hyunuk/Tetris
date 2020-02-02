@@ -28,7 +28,7 @@ public class GameController : MonoBehaviour {
     private float playTime;
     
     private int currStage = 0;
-    private List<string> Stages = new List<string>();
+
     private HashSet<int> deck = new HashSet<int>();
 
     private Block[,] grid = new Block[Helper.HEIGHT, Helper.WIDTH];
@@ -54,14 +54,10 @@ public class GameController : MonoBehaviour {
     }
 
     void InitGame() {
+        print("InitGame");
         FindObjectOfType<AudioManager>().Play("GameStart");
         controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
-        print(controller.GetMode());
         gameModeValue.text = (controller.GetMode() == Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
-        for (int i = 1; i <= NUM_OF_STAGES; i++) {
-            string path = Path.GetFullPath(STAGES_PATH + i + ".txt");
-            Stages.Add(path);
-        }
         infoText.SetActive(false);
         restartButton.SetActive(false);
         resumeButton.SetActive(false);
@@ -103,6 +99,7 @@ public class GameController : MonoBehaviour {
     }
 
     void NextBlock() {
+        print("NextBlock");
         if (deck.Count == Blocks.Length) deck.Clear();
         do nextBlock = Random.Range(0, Blocks.Length);
         while (deck.Contains(nextBlock));
@@ -115,34 +112,24 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
-        print("SetStage in!");
-        string textFile = Stages[currStage];
-
-        if (File.Exists(textFile)) {
-            string[] lines = File.ReadAllLines(textFile);
-            for (int y = 0; y < Helper.HEIGHT; y++) {
-                string[] pixels  = lines[y].Split(',');
-                for (int x = 0; x < Helper.WIDTH; x++) {
-                    if (grid[Helper.HEIGHT - y - 1, x] != null) grid[Helper.HEIGHT - y - 1, x].Destroy();
-                    int blockType = Int16.Parse(pixels[x]);
-                    switch (blockType) {
-                        case 0:
-                            grid[Helper.HEIGHT - y - 1, x] = null;
-                            break;
-                        case 1:
-                            grid[Helper.HEIGHT - y - 1, x] = Instantiate(deadBlock, new Vector3(x, Helper.HEIGHT - y - 1, 0), Quaternion.identity);
-                            break;
-                        case 2:
-                            numGems++;
-                            grid[Helper.HEIGHT - y - 1, x] = Instantiate(gemBlock, new Vector3(x, Helper.HEIGHT - y - 1, 0), Quaternion.identity);
-                            break;
-                    }
+        for (int y = 0; y < Helper.HEIGHT; y++) {
+            for (int x = 0; x < Helper.WIDTH; x++) {
+                if (grid[y, x] != null) grid[y, x].Destroy();
+                int blockType = Helper.Stages[currStage, Helper.HEIGHT - y - 1, x];
+                switch (blockType) {
+                    case 0:
+                        grid[y, x] = null;
+                        break;
+                    case 1:
+                        grid[y, x] = Instantiate(deadBlock, new Vector3(x, y, 0), Quaternion.identity);
+                        break;
+                    case 2:
+                        numGems++;
+                        grid[y, x] = Instantiate(gemBlock, new Vector3(x, y, 0), Quaternion.identity);
+                        break;
                 }
             }
-        } else {
-            print(String.Format("File {0} does not exist!", textFile));
         }
-        print(String.Format("Initial # of gems: {0}", numGems));
     }
 
     void Update() {
@@ -186,6 +173,7 @@ public class GameController : MonoBehaviour {
     }
 
     void Rotate() {
+        print("Rotate");
         Transform currTransform = currBlock.transform;
         currTransform.RotateAround(currTransform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
         ghostBlock.transform.RotateAround(ghostBlock.transform.TransformPoint(currBlock.rotationPoint), Vector3.forward, 90);
@@ -198,6 +186,7 @@ public class GameController : MonoBehaviour {
     }
 
     void HorizontalMove(Vector3 nextMove) {
+        print("HorizontalMove");
         currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
@@ -213,6 +202,7 @@ public class GameController : MonoBehaviour {
     }
 
     private void EndTurn() {
+        print("EndTurn");
         try {
             AddToGrid();
             CheckForLines();
@@ -224,6 +214,7 @@ public class GameController : MonoBehaviour {
     }
 
     void AddToGrid() {
+        print("AddToGrid");
         foreach (Transform children in currBlock.transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
@@ -253,9 +244,11 @@ public class GameController : MonoBehaviour {
         score += scores[numLines] * Mathf.RoundToInt((linesDeleted / N) + 1);
         linesDeleted += numLines;
         StartCoroutine(WaitForNewBlock());
+        print(isShowingAnimation);
     }
 
     private IEnumerator WaitForNewBlock() {
+        print("WaitForNewBlock");
         while (isDestroying) {
             yield return new WaitForSeconds(0.03f);
         }
@@ -263,6 +256,7 @@ public class GameController : MonoBehaviour {
     }
 
     private IEnumerator WaitForRowDown(int y) {
+        print("WaitForRowDown");
         while (isDestroying) {
             yield return new WaitForSeconds(0.03f);
         }
@@ -277,6 +271,7 @@ public class GameController : MonoBehaviour {
     }                           
 
     private IEnumerator DeleteLine(int y) {
+        print("DeleteLine");
         isDestroying = true;
         int[] destroyedBlocks = new int[1];
         destroyedBlocks[0] = 0;
@@ -302,6 +297,7 @@ public class GameController : MonoBehaviour {
     }
 
     private IEnumerator DeleteLineEffect(Block dead, int[] destroyedBlocks) {
+        print("DeleteLineEffect");
         Color tmp = dead.sprite.GetComponent<SpriteRenderer>().color;
         float _progress = 1f;
 
@@ -329,6 +325,7 @@ public class GameController : MonoBehaviour {
     }
 
     bool ValidMove(Transform transform) {
+        print("ValidMove");
         foreach (Transform children in transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
@@ -343,6 +340,7 @@ public class GameController : MonoBehaviour {
     }
 
     public Vector3 GhostPosition(Vector3 vec) {
+        print("GhostPosition");
         int x = Mathf.RoundToInt(vec.x), y = Math.Max(Mathf.RoundToInt(vec.y), 0), z = Mathf.RoundToInt(vec.z);
         ghostBlock.transform.position = new Vector3(x, y, z);
         while (ValidMove(ghostBlock.transform)) ghostBlock.transform.position += Vector3.down;
@@ -351,15 +349,16 @@ public class GameController : MonoBehaviour {
     }
 
     private void NewBlock() {
+        print("NewBlock");
         if (gameClear) GameClear();
         currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
         NewGhost();
         NextBlock();
         isShowingAnimation = false;
-
     }
 
     private void NewGhost() {
+        print("NewGhost");
         if (ghostBlock != null) {
             ghostBlock.Destroy();
             ghostBlock = Instantiate(Ghosts[nextBlock], currBlock.transform.position, Quaternion.identity);

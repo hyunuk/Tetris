@@ -29,10 +29,10 @@ public class ModeController : MonoBehaviour
         return mode;
     }
 
-    public void SetMode(int modeNum) {
+    public void SetMode(int mode) {
         FindObjectOfType<AudioManager>().Play("MenuMove");
-        mode = modeNum == 0 ? Mode.stage : Mode.infinite;
-        switch (mode) {
+        this.mode = mode == 0 ? Mode.stage : Mode.infinite;
+        switch (this.mode) {
             case Mode.stage:
                 stageMode.interactable = false;
                 infiniteMode.interactable = true;
