@@ -31,8 +31,8 @@ public class ModeController : MonoBehaviour
 
     public void SetMode(int mode) {
         FindObjectOfType<AudioManager>().Play("MenuMove");
-        this.mode = mode == 0 ? Mode.stage : Mode.infinite;
-        switch (this.mode) {
+        ModeController.mode = mode == 0 ? Mode.stage : Mode.infinite;
+        switch (ModeController.mode) {
             case Mode.stage:
                 stageMode.interactable = false;
                 infiniteMode.interactable = true;
