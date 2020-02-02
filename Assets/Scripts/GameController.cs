@@ -37,6 +37,7 @@ public class GameController : MonoBehaviour {
     public TetrisBlock currBlock;
     public TetrisBlock deadBlock;
     public GameObject nextBlockBackground;
+    public GameObject gameOverText, gameClearText;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
     private bool hardDropped, gameOver, gameClear, isDestroying;
@@ -47,6 +48,8 @@ public class GameController : MonoBehaviour {
     void Awake() {
         controller = GameObject.FindWithTag("ModeController").GetComponent<ModeController>();
         gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
+        gameOverText.SetActive(false);
+        gameClearText.SetActive(false);
     }
 
     void Start() {
@@ -198,7 +201,11 @@ public class GameController : MonoBehaviour {
         while (isDestroying) {
             yield return new WaitForSeconds(0.03f);
         }
-        NewBlock();
+        try {
+            NewBlock();
+        } catch (GameClearException e) {
+            GameClear();
+        }
     }
 
     private IEnumerator WaitForRowDown(int y) {
@@ -266,7 +273,6 @@ public class GameController : MonoBehaviour {
 				}
             }
         }
-        if (gameClear) throw new GameClearException();
     }
 
     bool ValidMove(Transform transform) {
@@ -292,6 +298,7 @@ public class GameController : MonoBehaviour {
     }
 
     private void NewBlock() {
+        if (gameClear) throw new GameClearException();
         currBlock = Instantiate(Blocks[nextBlock], startPos, Quaternion.identity);
         NewGhost();
         NextBlock();
@@ -309,12 +316,13 @@ public class GameController : MonoBehaviour {
     private void GameOver() {
         print("Game Over");
         if (ghostBlock != null) ghostBlock.Destroy();
+        gameOverText.SetActive(true);
     }
 
     private void GameClear() {
         print("Game Clear");
         if (ghostBlock != null) ghostBlock.Destroy();
-        // set panel active
+        gameClearText.SetActive(true);
     }
 }
 
