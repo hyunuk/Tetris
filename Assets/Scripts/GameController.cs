@@ -12,9 +12,8 @@ using Quaternion = UnityEngine.Quaternion;
 
 public class GameController : MonoBehaviour {
     private readonly string STAGES_PATH = "Assets/Stages/";
-    private float previousTime;
-    private float previousToLeft;
-    private float previousToRight;
+    private float previousTime, previousToLeft, previousToRight;
+    private float time;
     public float fallTime = 0.8f;
     private float N = 20;
     public Vector3 startPos = new Vector3();
@@ -38,10 +37,10 @@ public class GameController : MonoBehaviour {
     public TetrisBlock nextBlockObject;
     public TetrisBlock currBlock;
     public TetrisBlock deadBlock;
-    public GameObject nextBlockBackground, infoText, restartButton;
+    public GameObject nextBlockBackground, infoText, restartButton, resumeButton, pauseButton;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
-    private bool hardDropped, gameOver, gameClear, isDestroying;
+    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused;
     private ModeController controller;
 
     public Text timeValue, levelValue, linesValue, highscoreValue, scoreValue, gameModeValue;
@@ -51,12 +50,25 @@ public class GameController : MonoBehaviour {
         gameModeValue.text = (controller.GetMode() == ModeController.Mode.stage ? "S T A G E" : "I N F I N I T E") + "  M O D E";
         infoText.SetActive(false);
         restartButton.SetActive(false);
+        resumeButton.SetActive(false);
     }
 
     void Start() {
         NextBlock();
         if (controller.GetMode() == ModeController.Mode.stage) SetStage();
         NewBlock();
+    }
+
+    public void Pause() {
+        isPaused = true;
+        pauseButton.SetActive(false);
+        resumeButton.SetActive(true);
+    }
+
+    public void Resume() {
+        isPaused = false;
+        resumeButton.SetActive(false);
+        pauseButton.SetActive(true);
     }
 
     void NextBlock() {
@@ -103,7 +115,8 @@ public class GameController : MonoBehaviour {
 
     void Update() {
         if (controller.GetMode() == ModeController.Mode.stage && numGems == 0) gameClear = true;
-        if (!gameOver && !gameClear) {
+        if (!gameOver && !gameClear && isPaused && Input.GetKeyDown(KeyCode.P)) Resume();
+        else if (!gameOver && !gameClear && !isPaused) {
             if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.08f) {
                 HorizontalMove(Vector3.left);
                 previousToLeft = Time.time;
@@ -116,6 +129,8 @@ public class GameController : MonoBehaviour {
                 while (ValidMove(currBlock.transform) && !hardDropped) VerticalMove(Vector3.down);
             } else if (Input.GetKeyUp(KeyCode.Space)) {
                 hardDropped = false;
+            } else if (Input.GetKeyDown(KeyCode.P)) {
+                Pause();
             }
 
             if (Time.time - previousTime > (Input.GetKey(KeyCode.DownArrow) ? fallTime / 10 : fallTime)) {
@@ -128,7 +143,9 @@ public class GameController : MonoBehaviour {
 
             if (Int16.Parse(levelValue.text) < nextLevel) fallTime /= 1f + (Mathf.RoundToInt(linesDeleted / N) * 0.1f);
 
-            timeValue.text = Time.time.ToString();
+            time += Time.deltaTime;
+
+            timeValue.text = time.ToString();
             levelValue.text = nextLevel.ToString();
             linesValue.text = linesDeleted.ToString();
             highscoreValue.text = score.ToString();
