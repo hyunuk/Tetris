@@ -162,6 +162,7 @@ public class GameController : MonoBehaviour {
         } catch (GameOverException e) {
             GameOver();
         } catch (GameClearException e) {
+            print("clear");
             GameClear();
         }
     }
