@@ -21,6 +21,7 @@ public class ModeController : MonoBehaviour
     }
 
     public void StartGame() {
+        FindObjectOfType<AudioManager>().Play("Start");
         SceneManager.LoadScene(1);
     }
 
@@ -29,6 +30,7 @@ public class ModeController : MonoBehaviour
     }
 
     public void SetMode(int mode) {
+        FindObjectOfType<AudioManager>().Play("MenuMove");
         this.mode = mode == 0 ? Mode.stage : Mode.infinite;
         switch (this.mode) {
             case Mode.stage:
