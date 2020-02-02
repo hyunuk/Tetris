@@ -2,7 +2,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Numerics;
 using UnityEngine;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
@@ -10,6 +9,7 @@ using Vector3 = UnityEngine.Vector3;
 using Quaternion = UnityEngine.Quaternion;
 
 public class GameController : MonoBehaviour {
+    private readonly string STAGES_PATH = "Assets/Stages/";
     private float previousTime;
     private float previousToLeft;
     private float previousToRight;
@@ -22,6 +22,7 @@ public class GameController : MonoBehaviour {
     private int linesDeleted = 0;
     private int numGems = 0;
     private readonly int[] scores = {0,40,100,300,1200};
+    private ArrayList Stages = new ArrayList();
     private readonly string textFile = Path.GetFullPath("Assets/Stages/Easy.txt");
     private HashSet<int> deck = new HashSet<int>();
 
@@ -68,6 +69,12 @@ public class GameController : MonoBehaviour {
     }
 
     void SetStage() {
+        for (int i = 1; i <= 20; i++) {
+            string stage = Path.GetFullPath(STAGES_PATH + i + ".txt");
+            Stages.Add(stage);
+            
+        }
+
         if (File.Exists(textFile)) {
             string[] lines = File.ReadAllLines(textFile);
             for (int y = 0; y < height; y++) {
@@ -160,7 +167,7 @@ public class GameController : MonoBehaviour {
         } catch (GameOverException e) {
             GameOver();
         } catch (GameClearException e) {
-            print("clear");
+            print("");
             GameClear();
         }
     }
