@@ -215,12 +215,11 @@ public class GameController : MonoBehaviour {
             TetrisBlock curr = Instantiate(deadBlock, new Vector3(roundedX, roundedY, 0), Quaternion.identity);
             curr.sprite.GetComponent<SpriteRenderer>().color = currColor;
             grid[roundedY, roundedX] = curr;
-            currBlock.Destroy();
-            ghostBlock.Destroy();
-
             print(String.Format("({0},{1})", roundedX, roundedY));
 
         }
+        currBlock.Destroy();
+        ghostBlock.Destroy();
     }
 
     void CheckForLines() {
