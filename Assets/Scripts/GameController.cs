@@ -268,7 +268,6 @@ public class GameController : MonoBehaviour {
         for (int x = 0; x < Helper.WIDTH; x++) {
             if (grid[y, x] != null) {
                 StartCoroutine(DeleteLineEffect(grid[y, x], destroyedBlocks));
-                yield return new WaitForSeconds(0.05f);
             }
         }
 
