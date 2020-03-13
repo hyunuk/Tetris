@@ -1,10 +1,10 @@
 {
 "companyName": "DreamCatcher",
 "productName": "Tetris",
-"productVersion": "0.6",
-"dataUrl": "v0.6.data.unityweb",
-"wasmCodeUrl": "v0.6.wasm.code.unityweb",
-"wasmFrameworkUrl": "v0.6.wasm.framework.unityweb",
+"productVersion": "1.0",
+"dataUrl": "v1.0.data.unityweb",
+"wasmCodeUrl": "v1.0.wasm.code.unityweb",
+"wasmFrameworkUrl": "v1.0.wasm.framework.unityweb",
 "graphicsAPI": ["WebGL 2.0","WebGL 1.0"],
 "webglContextAttributes": {"preserveDrawingBuffer": false},
 "splashScreenStyle": "Dark",
@@ -12,5 +12,5 @@
 "cacheControl": {"default": "must-revalidate"},
 "developmentBuild": false,
 "multithreading": false,
-"unityVersion": "2019.3.0f6"
+"unityVersion": "2019.3.5f1"
 }
