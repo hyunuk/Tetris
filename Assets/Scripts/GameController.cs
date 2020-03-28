@@ -26,7 +26,9 @@ public class GameController : MonoBehaviour {
     private int linesDeleted = 0;
     private int numGems = 0;
     private float playTime;
-    
+    private int nextLevel;
+    private List<int> deletingRow = new List<int>();
+
     private int currStage = 0;
 
     private HashSet<int> deck = new HashSet<int>();
@@ -43,7 +45,7 @@ public class GameController : MonoBehaviour {
     public GameObject nextBlockBackground, infoText, restartButton, resumeButton, pauseButton, speakerButton, muteButton;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
-    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused, isShowingAnimation, isRowDown;
+    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused, isShowingAnimation, isRowDown, isAnimating, isEndTurn;
     private ModeController controller;
     public Text timeValue, levelValue, linesValue, stageValue, scoreValue, gameModeValue;
 
@@ -63,6 +65,8 @@ public class GameController : MonoBehaviour {
         gameOver = false;
         gameClear = false;
         isShowingAnimation = false;
+        isEndTurn = false;
+        isAnimating = false;
         playTime = 0;
         linesDeleted = 0;
         score = 0;
@@ -134,7 +138,7 @@ public class GameController : MonoBehaviour {
 
     void Update() {
         if (isPaused && Input.GetKeyDown(KeyCode.P)) Resume();
-        else if (!gameOver && !gameClear && !isPaused && !isShowingAnimation) {
+        else if (!isEndTurn && !gameOver && !gameClear && !isPaused && !isShowingAnimation) {
             if (Input.GetKey(KeyCode.LeftArrow) && Time.time - previousToLeft > 0.1f) {
                 HorizontalMove(Vector3.left);
                 previousToLeft = Time.time;
@@ -155,20 +159,33 @@ public class GameController : MonoBehaviour {
                 VerticalMove(Vector3.down);
                 previousTime = Time.time;
             }
-            if (!ghostBlock.IsDestroyed()) ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
+            if (isAnimating && !isEndTurn) {
+                EndTurn();
+                isEndTurn = false;
+            }
 
-            int nextLevel = Mathf.RoundToInt((linesDeleted / N) + 1);
-
+            nextLevel = Mathf.RoundToInt((linesDeleted / N) + 1);
             if (Int16.Parse(levelValue.text) < nextLevel) fallTime /= 1f + (Mathf.RoundToInt(linesDeleted / N) * 0.1f);
 
             playTime += Time.deltaTime;
             int minutes = Mathf.RoundToInt((playTime % (60 * 60 * 60)) / (60 * 60)), seconds = Mathf.RoundToInt((playTime % (60 * 60)) / 60), microseconds = Mathf.RoundToInt(playTime % 60);
-
             timeValue.text = String.Format("{0}:{1}:{2}", (minutes < 10 ? "0" : "") + minutes.ToString(), (seconds < 10 ? "0" : "") + seconds.ToString(), (microseconds < 10 ? "0" : "") + microseconds.ToString());
-            levelValue.text = nextLevel.ToString();
-            linesValue.text = linesDeleted.ToString();
-            stageValue.text = (currStage + 1).ToString();
-            scoreValue.text = score.ToString();
+
+            GhostBlockImgUpdate();
+            InfoUpdate();
+        }
+    }
+
+    private void InfoUpdate() {
+        levelValue.text = nextLevel.ToString();
+        linesValue.text = linesDeleted.ToString();
+        stageValue.text = (currStage + 1).ToString();
+        scoreValue.text = score.ToString();
+    }
+
+    private void GhostBlockImgUpdate() {
+        if (!ghostBlock.IsDestroyed()) {
+            ghostBlock.transform.position = GhostPosition(currBlock.transform.position);
         }
     }
 
@@ -195,70 +212,65 @@ public class GameController : MonoBehaviour {
         currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
-            EndTurn();
+            CreateDeadBlock();
+            DestroyCurrBlock();
+            CheckForLines();
         }
     }
 
-    private void EndTurn() {
-        print("EndTurn");
-        AddToGrid();
-        CheckForLines();
-        hardDropped = true;
-        FindObjectOfType<AudioManager>().Play("Blip");
-    }
-
-    void AddToGrid() {
+    private void CreateDeadBlock() {
         foreach (Transform children in currBlock.transform) {
             int roundedY = Mathf.RoundToInt(children.transform.position.y);
             int roundedX = Mathf.RoundToInt(children.transform.position.x);
             Color currColor = children.GetComponent<SpriteRenderer>().color;
-            TetrisBlock curr = Instantiate(deadBlock, new Vector3(roundedX, roundedY, 0), Quaternion.identity);
-            curr.sprite.GetComponent<SpriteRenderer>().color = currColor;
-            grid[roundedY, roundedX] = curr;
-            print(String.Format("({0},{1})", roundedX, roundedY));
-
+            if (grid[roundedY, roundedX] == null) {
+                TetrisBlock curr = Instantiate(deadBlock, new Vector3(roundedX, roundedY, 0), Quaternion.identity);
+                curr.sprite.GetComponent<SpriteRenderer>().color = currColor;
+                grid[roundedY, roundedX] = curr;
+            }
         }
+    }
+
+    private void DestroyCurrBlock() {
         currBlock.Destroy();
         ghostBlock.Destroy();
     }
 
-    void CheckForLines() {
-        print("checkforlines");
+    private void CheckForLines() {
         isShowingAnimation = true;
+        deletingRow.Clear();
 
-        int numLines = 0;
         for (int y = Helper.HEIGHT - 1; y >= 0; y--) {
             if (HasLine(y)) {
-                numLines++;
-                StartCoroutine(DeleteLine(y));
-                StartCoroutine(WaitForRowDown(y));
+                deletingRow.Add(y);
             }
         }
-        score += scores[numLines] * Mathf.RoundToInt((linesDeleted / N) + 1);
-        linesDeleted += numLines;
-        StartCoroutine(WaitForNewBlock());
-    }
-
-    private IEnumerator WaitForNewBlock() {
-        while (isDestroying || isRowDown) {
-            yield return new WaitForSeconds(0.03f);
+        score += scores[deletingRow.Count] * Mathf.RoundToInt((linesDeleted / N) + 1);
+        linesDeleted += deletingRow.Count;
+        if (deletingRow != null) {
+            isAnimating = true;
         }
-        NewBlock();
     }
 
-    private IEnumerator WaitForRowDown(int y) {
-        while (isDestroying) {
-            yield return new WaitForSeconds(0.03f);
-        }
-        RowDown(y);
-    }
-
-    bool HasLine(int y) {
+    private bool HasLine(int y) {
         for (int x = 0; x < Helper.WIDTH; x++) {
             if (grid[y, x] == null) return false;
         }
         return true;
-    }                           
+    }
+
+    private void EndTurn() {
+        isEndTurn = true;
+        print("EndTurn");
+        FindObjectOfType<AudioManager>().Play("Blip");
+        hardDropped = true;
+        foreach (var y in deletingRow) {
+            StartCoroutine(DeleteLine(y));
+            StartCoroutine(WaitForRowDown(y));
+        }
+        StartCoroutine(WaitForNewBlock());
+        isAnimating = false;
+    }
 
     private IEnumerator DeleteLine(int y) {
         print("deleteline");
@@ -272,22 +284,19 @@ public class GameController : MonoBehaviour {
         }
 
         while (destroyedBlocks[0] < 10) {
-            yield return new WaitForSeconds(0.05f);
+            yield return new WaitForSeconds(0.1f);
         }
         for (int x = 0; x < Helper.WIDTH; x++) {
-            if (grid[y, x] != null) {
-                if (grid[y, x].transform.GetComponent<GemBlock>() != null) numGems--;
-                grid[y, x].Destroy();
-                grid[y, x] = null;
-            }
+            if (grid[y, x] == null) continue;
+            if (grid[y, x].transform.GetComponent<GemBlock>() != null) numGems--;
+            grid[y, x].Destroy();
+            grid[y, x] = null;
         }
         isDestroying = false;
         destroyedBlocks[0] = 0;
     }
 
     private IEnumerator DeleteLineEffect(Block dead, int[] destroyedBlocks) {
-        print("deletelineeffect");
-
         Color tmp = dead.sprite.GetComponent<SpriteRenderer>().color;
         float _progress = 1f;
 
@@ -302,12 +311,29 @@ public class GameController : MonoBehaviour {
         }
     }
 
+    private IEnumerator WaitForRowDown(int y) {
+        while (isDestroying) {
+            yield return new WaitForSeconds(0.01f);
+        }
+        RowDown(y);
+    }
+
+    private IEnumerator WaitForNewBlock() {
+        while (isDestroying || isRowDown) {
+            yield return new WaitForSeconds(0.01f);
+        }
+        NewBlock();
+    }
+
     void RowDown(int deletedLine) {
         print("rowdown");
 
         isRowDown = true;
         for (int y = deletedLine; y < Helper.HEIGHT; y++) {
             for (int x = 0; x < Helper.WIDTH; x++) {
+                if (y == deletedLine) {
+                    grid[y, x] = null;
+                }
                 if (grid[y, x] != null) {
                     grid[y - 1, x] = grid[y, x];
                     grid[y, x] = null;
