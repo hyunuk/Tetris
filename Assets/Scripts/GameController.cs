@@ -45,11 +45,9 @@ public class GameController : MonoBehaviour {
     public GameObject nextBlockBackground, infoText, restartButton, resumeButton, pauseButton, speakerButton, muteButton;
     public GemBlock gemBlock;
     private GhostBlock ghostBlock;
-    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused, isShowingAnimation, isRowDown, isAnimating;
-    private bool isEndTurn;
+    private bool hardDropped, gameOver, gameClear, isDestroying, isPaused, isShowingAnimation, isRowDown, isAnimating, isEndTurn;
     private ModeController controller;
     public Text timeValue, levelValue, linesValue, stageValue, scoreValue, gameModeValue;
-    
 
     void Start() {
         muteButton.SetActive(true);
@@ -211,7 +209,7 @@ public class GameController : MonoBehaviour {
     }
 
     void VerticalMove(Vector3 nextMove) {
-            currBlock.transform.position += nextMove;
+        currBlock.transform.position += nextMove;
         if (!ValidMove(currBlock.transform)) {
             currBlock.transform.position -= nextMove;
             CreateDeadBlock();
