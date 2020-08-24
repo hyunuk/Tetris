@@ -12,7 +12,7 @@ When a line is cleared, the score increases based on the number of lines cleared
 ### Preview next piece
 You can see the next piece of a tetromino upper-right side of the screen.
 
-### Ghost Piese
+### Ghost Piece
 A tetromino will land if it is allowed to drop into the bottom field. As you moves the falling piece, the ghost piece moves below it.
 
 ### Hard/Soft Drop
